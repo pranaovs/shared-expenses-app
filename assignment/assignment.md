@@ -101,29 +101,45 @@ but others can also.
 #### Frontend
 
 [ ] Create sample static data for user, groups, transaction list for a group
+
 [ ] Visualize user info
+
 [ ] Visualize group info
+
 [ ] Visualize an expense
+
 [ ] Create a new user
+
 [ ] Create a new split group
+
 [ ] Create a new expense
 
 #### Backend
 
 [ ] Send user info
+
 [ ] Send group info
+
 [ ] Send an expense info
+
 [ ] Handle new group creation
+
 [ ] Handle new expense addition
+
 [ ] Handle new user creation
 
 #### Database
 
 [ ] Fetch expense details
+
 [ ] Fetch group details
+
 [ ] Fetch user details
+
 [ ] New expense split creation
+
 [ ] New group creation
+
 [ ] New user creation
 
 ## CONVERSION OF PROJECT IDEA TO ER DIAGRAM
