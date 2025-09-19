@@ -1,6 +1,6 @@
 # DBMS Project: Finance Sharing Application
 
-## PROJECT SELECTION AND IDEATION
+## Project Selection and Ideation
 
 > Splitwise but FOSS
 >
@@ -142,7 +142,7 @@ but others can also.
 
 [ ] New user creation
 
-## CONVERSION OF PROJECT IDEA TO ER DIAGRAM
+## Conversion of Project Idea to ER Diagram
 
 <!-- TODO: add er diagram -->
 
@@ -193,7 +193,7 @@ but others can also.
      }
 ```
 
-## CONVERSION OF UML DIAGRAM TO DATABASE
+## Conversion of UML Diagram to Database
 
 Creation of database in MySQL:
 
@@ -252,7 +252,7 @@ CREATE TABLE EXPENSE_SPLITS (
 );
 ```
 
-## WRITE DOWN 50 COMPLEX QUERIES FOR YOUR PROJECT IN NORMAL ENGLISH
+## Write down 50 complex queries for your project in normal English
 
 > User & Group Management Queries
 
@@ -319,7 +319,7 @@ CREATE TABLE EXPENSE_SPLITS (
 49. Find the user who has the most balanced ledger (net balance closest to zero) across all groups.
 50. List all expenses and the time elapsed since they were created.
 
-## EXECUTE FIRST 25 QUERIES FOR YOUR PROJECT AND SHOW THE OUTPUT
+## Execute first 25 queries for your project and show the output
 
 ### Sample Data
 
@@ -376,9 +376,7 @@ CREATE TABLE EXPENSE_SPLITS (
 | e4 | u3 | 900.00 | paid |
 | e4 | u1 | 300.00 | owes |
 
-### Query Execution (1-25)
-
-#### 1. List all users and their email addresses, ordered by when they signed up
+### 1. List all users and their email addresses, ordered by when they signed up
 
 **SQL:**
 
@@ -395,7 +393,7 @@ SELECT name, email FROM USERS ORDER BY created_at ASC;
 | Charlie | <charlie@example.com> |
 | David   | <david@example.com>   |
 
-#### 2. Find all groups created by a specific user (e.g., 'Alice')
+### 2. Find all groups created by a specific user (e.g., 'Alice')
 
 **SQL:**
 
@@ -413,7 +411,7 @@ WHERE u.name = 'Alice';
 | Goa Trip       | Expenses for our trip to Goa.      |
 | Apartment Rent | Monthly shared apartment expenses. |
 
-#### 3. List all members of a particular group (e.g., 'Goa Trip'), along with the date they joined
+### 3. List all members of a particular group (e.g., 'Goa Trip'), along with the date they joined
 
 **SQL:**
 
@@ -433,7 +431,7 @@ WHERE g.name = 'Goa Trip';
 | Bob     | 2023-10-01 10:05:00 |
 | Charlie | 2023-10-01 10:06:00 |
 
-#### 4. Count the number of members in each group
+### 4. Count the number of members in each group
 
 **SQL:**
 
@@ -451,7 +449,7 @@ GROUP BY g.name;
 | Goa Trip       | 3            |
 | Apartment Rent | 2            |
 
-#### 5. Find all groups that have more than 2 members
+### 5. Find all groups that have more than 2 members
 
 **SQL:**
 
@@ -469,7 +467,7 @@ HAVING COUNT(gm.user_id) > 2;
 |----------|--------------|
 | Goa Trip | 3            |
 
-#### 6. List users who are members of the 'Goa Trip' group but not the 'Apartment Rent' group
+### 6. List users who are members of the 'Goa Trip' group but not the 'Apartment Rent' group
 
 **SQL:**
 
@@ -488,7 +486,7 @@ SELECT u.name FROM USERS u WHERE u.user_id IN (
 | Bob     |
 | Charlie |
 
-#### 7. Find the name and description of the most recently created group
+### 7. Find the name and description of the most recently created group
 
 **SQL:**
 
@@ -502,7 +500,7 @@ SELECT name, description FROM GROUPS ORDER BY created_at DESC LIMIT 1;
 |----------------|------------------------------------|
 | Apartment Rent | Monthly shared apartment expenses. |
 
-#### 8. List all users who have not created any groups
+### 8. List all users who have not created any groups
 
 **SQL:**
 
@@ -521,7 +519,7 @@ WHERE g.group_id IS NULL;
 | Charlie |
 | David   |
 
-#### 9. For a specific group, show the name of the user who created it
+### 9. For a specific group, show the name of the user who created it
 
 **SQL:**
 
@@ -538,7 +536,7 @@ WHERE g.name = 'Apartment Rent';
 |--------------|
 | Alice        |
 
-#### 10. Find all users who joined the platform in the last 30 days
+### 10. Find all users who joined the platform in the last 30 days
 
 **SQL:**
 
@@ -552,7 +550,7 @@ SELECT name, email, created_at FROM USERS WHERE created_at >= date('now', '-30 d
 |-------|-------------------|---------------------|
 | David | <david@example.com> | 2023-10-25 14:30:00 |
 
-#### 11. List all expenses for a specific group ('Goa Trip'), ordered from newest to oldest
+### 11. List all expenses for a specific group ('Goa Trip'), ordered from newest to oldest
 
 **SQL:**
 
@@ -572,7 +570,7 @@ ORDER BY e.created_at DESC;
 | Cab Fare  | 500.00  | Bob      | 2023-10-11 18:00:00 |
 | Dinner    | 3000.00 | Alice    | 2023-10-10 20:00:00 |
 
-#### 12. Find the total amount of money spent in a specific group
+### 12. Find the total amount of money spent in a specific group
 
 **SQL:**
 
@@ -588,7 +586,7 @@ WHERE group_id = (SELECT group_id FROM GROUPS WHERE name = 'Goa Trip');
 |-------------|
 | 4400.00     |
 
-#### 13. For a particular expense (e.g., 'Dinner'), show who paid how much and who owes how much
+### 13. For a particular expense (e.g., 'Dinner'), show who paid how much and who owes how much
 
 **SQL:**
 
@@ -608,7 +606,7 @@ WHERE es.expense_id = 'e1';
 | Bob     | owes | 1000.00 |
 | Charlie | owes | 1000.00 |
 
-#### 14. List all expenses added by a specific user ('Bob') across all groups
+### 14. List all expenses added by a specific user ('Bob') across all groups
 
 **SQL:**
 
@@ -625,7 +623,7 @@ WHERE e.added_by = 'u2';
 |----------|------------|--------|
 | Cab Fare | Goa Trip   | 500.00 |
 
-#### 15. Find the top 5 most expensive purchases made in the 'Goa Trip' group
+### 15. Find the top 5 most expensive purchases made in the 'Goa Trip' group
 
 **SQL:**
 
@@ -641,7 +639,7 @@ SELECT title, amount FROM EXPENSES WHERE group_id = 'g1' ORDER BY amount DESC LI
 | Groceries | 900.00  |
 | Cab Fare  | 500.00  |
 
-#### 16. List all expenses that are marked as having an incomplete split
+### 16. List all expenses that are marked as having an incomplete split
 
 **SQL:**
 
@@ -658,7 +656,7 @@ WHERE e.is_incomplete_split = true;
 |-----------|------------|
 | Groceries | Goa Trip   |
 
-#### 17. Calculate the total amount paid by a specific user ('Alice') across all her expenses
+### 17. Calculate the total amount paid by a specific user ('Alice') across all her expenses
 
 **SQL:**
 
@@ -674,7 +672,7 @@ WHERE user_id = 'u1' AND role = 'paid';
 |------------|
 | 18000.00   |
 
-#### 18. Calculate the total amount a specific user ('Charlie') owes across all expenses
+### 18. Calculate the total amount a specific user ('Charlie') owes across all expenses
 
 **SQL:**
 
@@ -690,7 +688,7 @@ WHERE user_id = 'u3' AND role = 'owes';
 |------------|
 | 1250.00    |
 
-#### 19. Find all expenses recorded at a specific location (using latitude/longitude proximity)
+### 19. Find all expenses recorded at a specific location (using latitude/longitude proximity)
 
 **SQL:** (This is a conceptual query, as a simple SQL DB doesn't have native geo-distance functions like PostGIS. The syntax is an example.)
 
@@ -707,7 +705,7 @@ WHERE (latitude BETWEEN 15.2 AND 15.3) AND (longitude BETWEEN 73.8 AND 73.9);
 |--------|---------|
 | Dinner | 3000.00 |
 
-#### 20. List expenses with titles containing the word 'Food' or 'Dinner'
+### 20. List expenses with titles containing the word 'Food' or 'Dinner'
 
 **SQL:**
 
@@ -721,7 +719,7 @@ SELECT title, amount FROM EXPENSES WHERE title LIKE '%Food%' OR title LIKE '%Din
 |--------|---------|
 | Dinner | 3000.00 |
 
-#### 21. Calculate the net balance (Total Paid - Total Owed) for each member in a specific group ('Goa Trip')
+### 21. Calculate the net balance (Total Paid - Total Owed) for each member in a specific group ('Goa Trip')
 
 **SQL:**
 
@@ -746,7 +744,7 @@ ORDER BY net_balance DESC;
 | Bob     | -750.00     |
 | Charlie | -350.00     |
 
-#### 22. Show the final settlement summary for a group: who should pay whom to settle all debts
+### 22. Show the final settlement summary for a group: who should pay whom to settle all debts
 
 **SQL:** (This logic is very complex and often handled in the application layer, but a simplified SQL approach can show balances.)
 The previous query (`#21`) provides the balances. The app would interpret this: Bob owes 750 and Charlie owes 350. Both can pay Alice to settle up, who is owed 2000 in total.
@@ -759,7 +757,7 @@ The previous query (`#21`) provides the balances. The app would interpret this: 
 | Charlie   | Alice      | 350.00  |
 *(Note: Remaining 900 for Alice is from the incomplete 'Groceries' expense, paid by Charlie)*
 
-#### 23. Find the user who has spent the most (paid the largest total amount) across all groups
+### 23. Find the user who has spent the most (paid the largest total amount) across all groups
 
 **SQL:**
 
@@ -779,7 +777,7 @@ LIMIT 1;
 |-------|------------|
 | Alice | 18000.00   |
 
-#### 24. Calculate the average expense amount for each group
+### 24. Calculate the average expense amount for each group
 
 **SQL:**
 
@@ -797,7 +795,7 @@ GROUP BY g.name;
 | Goa Trip       | 1466.6666666666667 |
 | Apartment Rent | 20000.00           |
 
-#### 25. List all users and their overall net balance across all groups they are a part of
+### 25. List all users and their overall net balance across all groups they are a part of
 
 **SQL:**
 
@@ -821,13 +819,9 @@ ORDER BY overall_net_balance DESC;
 | Bob     | -750.00             |
 | David   | -5000.00            |
 
-## EXECUTE NEXT 25 QUERIES FOR YOUR PROJECT AND SHOW THE OUTPUT
+## Execute next 25 queries for your project and show the output
 
-Continuing with the same sample data from the previous section.
-
-### Query Execution (26-50)
-
-#### 26. For a specific user ('Alice'), show a detailed transaction log of all payments made and amounts owed, ordered by date
+### 26. For a specific user ('Alice'), show a detailed transaction log of all payments made and amounts owed, ordered by date
 
 **SQL:**
 
@@ -855,7 +849,7 @@ ORDER BY e.created_at DESC;
 | 2023-10-10 20:00:00 | Goa Trip       | Dinner         | paid | 3000.00  |
 | 2023-10-10 20:00:00 | Goa Trip       | Dinner         | owes | 1000.00  |
 
-#### 27. Identify any expenses where the person who added the expense did not pay any amount for it
+### 27. Identify any expenses where the person who added the expense did not pay any amount for it
 
 **SQL:**
 
@@ -875,12 +869,12 @@ WHERE NOT EXISTS (
 |-------|----------|
 |       |          |
 
-#### 28. In the 'Goa Trip' group, find out how much 'Alice' owes 'Bob' in total
+### 28. In the 'Goa Trip' group, find out how much 'Alice' owes 'Bob' in total
 
 **SQL:** We can find expenses where both are involved and calculate the balance *for those expenses*.
 **Output:** The only expense involving both is 'Dinner'. Alice paid 3000, Bob owes 1000. So Bob owes Alice 1000 for this. The net balance shows Alice is a creditor and Bob is a debtor. The application logic would use this to determine that Bob owes Alice.
 
-#### 29. List the total spending per month for the 'Goa Trip' group
+### 29. List the total spending per month for the 'Goa Trip' group
 
 **SQL:**
 
@@ -897,7 +891,7 @@ GROUP BY month;
 |---------|----------------|
 | 2023-10 | 4400.00        |
 
-#### 30. Find the user who owes the most money overall across all groups
+### 30. Find the user who owes the most money overall across all groups
 
 **SQL:**
 
@@ -917,7 +911,7 @@ LIMIT 1;
 |-------|------------|
 | Alice | 11300.00   |
 
-#### 31. Find groups that have had no new expenses added in the last 60 days
+### 31. Find groups that have had no new expenses added in the last 60 days
 
 **SQL:**
 
@@ -934,7 +928,7 @@ WHERE group_id NOT IN (
 |------|
 |      |
 
-#### 32. List all users who are part of at least 2 groups
+### 32. List all users who are part of at least 2 groups
 
 **SQL:**
 
@@ -952,7 +946,7 @@ HAVING COUNT(DISTINCT gm.group_id) >= 2;
 |-------|
 | Alice |
 
-#### 33. Show the breakdown of who paid for each expense within the 'Apartment Rent' group
+### 33. Show the breakdown of who paid for each expense within the 'Apartment Rent' group
 
 **SQL:**
 
@@ -971,7 +965,7 @@ WHERE e.group_id = 'g2' AND es.role = 'paid';
 | Monthly Rent | Alice | 15000.00 |
 | Monthly Rent | David | 5000.00  |
 
-#### 34. Find the expense with the most number of people involved in its split
+### 34. Find the expense with the most number of people involved in its split
 
 **SQL:**
 
@@ -990,7 +984,7 @@ LIMIT 1;
 |--------|-----------------|
 | Dinner | 3               |
 
-#### 35. For each user, list the name of the group where they have the highest outstanding debt
+### 35. For each user, list the name of the group where they have the highest outstanding debt
 
 **SQL:** (Complex query involving subqueries or CTEs)
 
@@ -1026,7 +1020,7 @@ SELECT user_name, group_name, debt FROM RankedDebt WHERE rank_num = 1 AND debt >
 | Charlie   | Goa Trip       | 1250.00  |
 | David     | Apartment Rent | 10000.00 |
 
-#### 36. Identify "power users": users who have added more than 1 expense in total
+### 36. Identify "power users": users who have added more than 1 expense in total
 
 **SQL:**
 
@@ -1044,7 +1038,7 @@ HAVING COUNT(e.expense_id) > 1;
 |-------|----------------|
 | Alice | 2              |
 
-#### 37. For a specific expense, calculate the difference between the total amount and the sum of owed splits
+### 37. For a specific expense, calculate the difference between the total amount and the sum of owed splits
 
 **SQL:**
 
@@ -1065,7 +1059,7 @@ WHERE e.expense_id = 'e4' AND es.role = 'owes';
 | 900.00               | 300.00            | 600.00     |
 *(This difference of 600 indicates the 'Groceries' split is incomplete, which matches our data)*
 
-#### 38. List all pairs of users who are members of the same group
+### 38. List all pairs of users who are members of the same group
 
 **SQL:**
 
@@ -1087,7 +1081,7 @@ JOIN GROUPS g ON gm1.group_id = g.group_id;
 | Bob   | Charlie | Goa Trip       |
 | Alice | David   | Apartment Rent |
 
-#### 39. Find the average number of expenses added per user per group
+### 39. Find the average number of expenses added per user per group
 
 **SQL:** This is conceptually ambiguous. We can find the total expenses per group and divide by members.
 
@@ -1106,7 +1100,7 @@ GROUP BY g.name;
 | Goa Trip       | 1.0                     |
 | Apartment Rent | 0.5                     |
 
-#### 40. List all expenses where the amount was split unevenly among more than two people
+### 40. List all expenses where the amount was split unevenly among more than two people
 
 **SQL:** An "uneven" split means not all `owes` amounts are the same.
 
@@ -1125,7 +1119,7 @@ HAVING COUNT(DISTINCT es.amount) > 1 AND COUNT(es.user_id) > 2;
 |-------|
 |       |
 
-#### 41. Find users who are listed in `EXPENSE_SPLITS` but are not members of the corresponding group
+### 41. Find users who are listed in `EXPENSE_SPLITS` but are not members of the corresponding group
 
 **SQL:** (Data integrity check)
 
@@ -1146,7 +1140,7 @@ WHERE NOT EXISTS (
 |------|
 |      |
 
-#### 42. List expenses where the total paid amount in the splits does not equal the expense's total amount
+### 42. List expenses where the total paid amount in the splits does not equal the expense's total amount
 
 **SQL:** (Data integrity check)
 
@@ -1165,7 +1159,7 @@ HAVING e.amount <> SUM(es.amount);
 |-------|---------------|-------------------|
 |       |               |                   |
 
-#### 43. Find duplicate group memberships
+### 43. Find duplicate group memberships
 
 **SQL:**
 
@@ -1179,7 +1173,7 @@ SELECT user_id, group_id, COUNT(*) FROM GROUP_MEMBERS GROUP BY user_id, group_id
 |---------|----------|----------|
 |         |          |          |
 
-#### 44. Show all expenses that were added by a user who is not a member of that expense's group
+### 44. Show all expenses that were added by a user who is not a member of that expense's group
 
 **SQL:**
 
@@ -1200,7 +1194,7 @@ WHERE NOT EXISTS (
 |-------|----------|------------|
 |       |          |            |
 
-#### 45. List all expenses that have only one person in the split (i.e., they paid for themselves)
+### 45. List all expenses that have only one person in the split (i.e., they paid for themselves)
 
 **SQL:**
 
@@ -1218,7 +1212,7 @@ HAVING COUNT(DISTINCT es.user_id) = 1;
 |-------|
 |       |
 
-#### 46. Find the group with the highest total expenditure
+### 46. Find the group with the highest total expenditure
 
 **SQL:**
 
@@ -1237,7 +1231,7 @@ LIMIT 1;
 |----------------|-------------------|
 | Apartment Rent | 20000.00          |
 
-#### 47. Rank users within each group based on the total amount they have paid
+### 47. Rank users within each group based on the total amount they have paid
 
 **SQL:**
 
@@ -1272,7 +1266,7 @@ FROM GroupPayments;
 | Goa Trip       | Charlie   | 900.00     | 2            |
 | Goa Trip       | Bob       | 500.00     | 3            |
 
-#### 48. Calculate the percentage contribution of each user towards the total spending in the 'Goa Trip' group
+### 48. Calculate the percentage contribution of each user towards the total spending in the 'Goa Trip' group
 
 **SQL:**
 
@@ -1295,7 +1289,7 @@ GROUP BY u.name;
 | Bob     | 11.363636363636363      |
 | Charlie | 20.454545454545453      |
 
-#### 49. Find the user who has the most balanced ledger (net balance closest to zero) across all groups
+### 49. Find the user who has the most balanced ledger (net balance closest to zero) across all groups
 
 **SQL:**
 
@@ -1316,7 +1310,7 @@ LIMIT 1;
 |---------|-------------|
 | Charlie | -350.00     |
 
-#### 50. List all expenses and the time elapsed since they were created
+### 50. List all expenses and the time elapsed since they were created
 
 **SQL:** (Syntax may vary slightly between SQL dialects)
 
