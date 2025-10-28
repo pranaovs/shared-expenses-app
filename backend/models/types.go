@@ -3,15 +3,16 @@ package models
 
 type User struct {
 	UserID       string `json:"user_id" db:"user_id"`
-	Name         string `json:"name" db:"name"`
+	Name         string `json:"name" db:"user_name"`
 	Email        string `json:"email" db:"email"`
+	Guest        bool   `json:"guest" db:"is_guest"`
 	PasswordHash string `json:"-" db:"password_hash"` // excluded from JSON responses
 	CreatedAt    int64  `json:"created_at" db:"created_at"`
 }
 
 type Group struct {
 	GroupID     string `json:"group_id" db:"group_id"`
-	Name        string `json:"name" db:"name"`
+	Name        string `json:"name" db:"group_name"`
 	Description string `json:"description,omitempty" db:"description"`
 	CreatedBy   string `json:"created_by" db:"created_by"`
 	CreatedAt   int64  `json:"created_at" db:"created_at"`
@@ -41,5 +42,5 @@ type ExpenseSplit struct {
 	ExpenseID string  `json:"expense_id" db:"expense_id"`
 	UserID    string  `json:"user_id" db:"user_id"`
 	Amount    float64 `json:"amount" db:"amount"`
-	Role      string  `json:"role" db:"role"` // "paid" or "owes"
+	Role      string  `json:"role" db:"user_role"` // "paid" or "owes"
 }
