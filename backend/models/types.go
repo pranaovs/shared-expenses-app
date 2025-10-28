@@ -2,12 +2,12 @@
 package models
 
 type User struct {
-	UserID       string `json:"user_id" db:"user_id"`
-	Name         string `json:"name" db:"user_name"`
-	Email        string `json:"email" db:"email"`
-	Guest        bool   `json:"guest" db:"is_guest"`
-	PasswordHash string `json:"-" db:"password_hash"` // excluded from JSON responses
-	CreatedAt    int64  `json:"created_at" db:"created_at"`
+	UserID       string  `json:"user_id" db:"user_id"`
+	Name         string  `json:"name" db:"user_name"`
+	Email        string  `json:"email" db:"email"`
+	Guest        bool    `json:"guest" db:"is_guest"`
+	PasswordHash *string `json:"-" db:"password_hash"` // excluded from JSON responses
+	CreatedAt    int64   `json:"created_at" db:"created_at"`
 }
 
 type Group struct {
