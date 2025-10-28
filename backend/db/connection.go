@@ -2,18 +2,11 @@ package db
 
 import (
 	"context"
-	"errors"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect() (*pgxpool.Pool, error) {
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		return nil, errors.New("DATABASE_URL not set")
-	}
-
+func Connect(dbURL string) (*pgxpool.Pool, error) {
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		return nil, err
@@ -26,7 +19,6 @@ func Connect() (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-// CloseDB closes the connection pool.
 func Close(Pool *pgxpool.Pool) {
 	if Pool != nil {
 		Pool.Close()
