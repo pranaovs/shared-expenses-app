@@ -1,5 +1,5 @@
 -- USERS
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE users (
 );
 
 -- GROUPS
-CREATE TABLE groups (
+CREATE TABLE IF NOT EXISTS groups (
     group_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     group_name TEXT NOT NULL,
     description TEXT,
@@ -18,7 +18,7 @@ CREATE TABLE groups (
 );
 
 -- GROUP MEMBERS
-CREATE TABLE group_members (
+CREATE TABLE IF NOT EXISTS group_members (
     user_id UUID REFERENCES users (user_id) ON DELETE CASCADE,
     group_id UUID REFERENCES groups (group_id) ON DELETE CASCADE,
     joined_at TIMESTAMPTZ DEFAULT now(),
@@ -26,7 +26,7 @@ CREATE TABLE group_members (
 );
 
 -- EXPENSES
-CREATE TABLE expenses (
+CREATE TABLE IF NOT EXISTS expenses (
     expense_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     group_id UUID REFERENCES groups (group_id) ON DELETE CASCADE,
     added_by UUID REFERENCES users (user_id) ON DELETE SET NULL,
@@ -41,7 +41,7 @@ CREATE TABLE expenses (
 );
 
 -- EXPENSE SPLITS
-CREATE TABLE expense_splits (
+CREATE TABLE IF NOT EXISTS expense_splits (
     expense_id UUID REFERENCES expenses (expense_id) ON DELETE CASCADE,
     user_id UUID REFERENCES users (user_id) ON DELETE CASCADE,
     amount DOUBLE PRECISION NOT NULL,
