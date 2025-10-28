@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"shared-expenses-app/db"
 	"shared-expenses-app/routes"
@@ -22,7 +21,7 @@ func main() {
 	defer pool.Close()
 
 	// Run Migrations
-	if err := db.Migrate(pool, os.Getenv("DB_MIGRATIONS_DIR")); err != nil {
+	if err := db.Migrate(pool, utils.Getenv("DB_MIGRATIONS_DIR", "db/migrations")); err != nil {
 		log.Fatal(err)
 	}
 
