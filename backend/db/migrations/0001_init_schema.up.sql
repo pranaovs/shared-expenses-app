@@ -1,34 +1,38 @@
+-- USERS
 CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    registered BOOLEAN DEFAULT false NOT NULL
+    password_hash TEXT,
+    is_guest BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- GROUPS
 CREATE TABLE groups (
     group_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     group_name TEXT NOT NULL,
     description TEXT,
-    created_by UUID REFERENCES users (user_id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+    created_by UUID REFERENCES users (user_id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- GROUP MEMBERS
 CREATE TABLE group_members (
     user_id UUID REFERENCES users (user_id) ON DELETE CASCADE,
     group_id UUID REFERENCES groups (group_id) ON DELETE CASCADE,
-    joined_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    joined_at TIMESTAMPTZ DEFAULT now(),
     PRIMARY KEY (user_id, group_id)
 );
 
+-- EXPENSES
 CREATE TABLE expenses (
     expense_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     group_id UUID REFERENCES groups (group_id) ON DELETE CASCADE,
     added_by UUID REFERENCES users (user_id) ON DELETE SET NULL,
     title TEXT NOT NULL,
     description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
     amount DOUBLE PRECISION NOT NULL,
     is_incomplete_amount BOOLEAN DEFAULT FALSE,
     is_incomplete_split BOOLEAN DEFAULT FALSE,
@@ -36,6 +40,7 @@ CREATE TABLE expenses (
     longitude DOUBLE PRECISION
 );
 
+-- EXPENSE SPLITS
 CREATE TABLE expense_splits (
     expense_id UUID REFERENCES expenses (expense_id) ON DELETE CASCADE,
     user_id UUID REFERENCES users (user_id) ON DELETE CASCADE,
@@ -43,3 +48,8 @@ CREATE TABLE expense_splits (
     user_role TEXT CHECK (user_role IN ('paid', 'owes')),
     PRIMARY KEY (expense_id, user_id)
 );
+
+-- INDEXES
+CREATE INDEX idx_group_members_group_id ON group_members (group_id);
+CREATE INDEX idx_expenses_group_id ON expenses (group_id);
+CREATE INDEX idx_expense_splits_expense_id ON expense_splits (expense_id);
