@@ -11,7 +11,7 @@ import (
 )
 
 func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
-	// Create expense
+	// Create expense with splits
 	router.POST("/", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
@@ -27,11 +27,34 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		}
 		expense.AddedBy = userID
 
+		// Check user is in group
 		if err := db.MemberOfGroup(c, pool, userID, expense.GroupID); err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "user not a member of group"})
 			return
 		}
 
+		// Validate splits
+		if len(expense.Splits) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no splits provided"})
+			return
+		}
+
+		var total float64
+		for _, s := range expense.Splits {
+			// Check split user is in group
+			if err := db.MemberOfGroup(c, pool, s.UserID, expense.GroupID); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "split user not in group"})
+				return
+			}
+			total += s.Amount
+		}
+
+		if total != expense.Amount {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "split total does not match expense amount"})
+			return
+		}
+
+		// Create expense
 		expenseID, err := db.CreateExpense(c, pool, expense)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -57,6 +80,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
+		// Must be group member
 		if err := db.MemberOfGroup(c, pool, userID, expense.GroupID); err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
@@ -65,9 +89,8 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, expense)
 	})
 
-	// Update expense
+	// Update expense (with splits)
 	router.PUT("/:id", func(c *gin.Context) {
-		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -86,11 +109,11 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 		payload.ExpenseID = expenseID
-		payload.AddedBy = userID
 
+		// Fetch exp expense
 		exp, err := db.GetExpense(c, pool, expenseID)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": "expense not found"})
 			return
 		}
 
@@ -101,9 +124,29 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		// Authorization: only original adder or group owner can edit
+		// Authorization: only expense adder or group creator
 		if userID != exp.AddedBy && userID != groupCreator {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized. only adder or owner can edit"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+
+		// Validate splits
+		if len(payload.Splits) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no splits provided"})
+			return
+		}
+
+		var total float64
+		for _, s := range payload.Splits {
+			if err := db.MemberOfGroup(c, pool, s.UserID, exp.GroupID); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "split user not in group"})
+				return
+			}
+			total += s.Amount
+		}
+
+		if total != payload.Amount {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "split total does not match expense amount"})
 			return
 		}
 
@@ -132,7 +175,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 
 		expense, err := db.GetExpense(c, pool, expenseID)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": "expense not found"})
 			return
 		}
 
