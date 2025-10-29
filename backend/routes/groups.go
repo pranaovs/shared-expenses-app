@@ -77,7 +77,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// List groups the user is a member of
-	router.GET("me", func(c *gin.Context) {
+	router.GET("/me", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -94,7 +94,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// List groups the user is admin of
-	router.GET("admin", func(c *gin.Context) {
+	router.GET("/admin", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -144,7 +144,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Add members to a group
-	router.POST("add_members", func(c *gin.Context) {
+	router.POST("/add_members", func(c *gin.Context) {
 		type request struct {
 			GroupID string   `json:"group_id" binding:"required"`
 			UserIDs []string `json:"user_ids" binding:"required,min=1"`
@@ -210,7 +210,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Remove members from a group
-	router.POST("remove_members", func(c *gin.Context) {
+	router.POST("/remove_members", func(c *gin.Context) {
 		type request struct {
 			GroupID string   `json:"group_id" binding:"required"`
 			UserIDs []string `json:"user_ids" binding:"required,min=1"`

@@ -14,7 +14,7 @@ import (
 
 func RegisterAuthRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	// Register a new user
-	router.POST("register", func(c *gin.Context) {
+	router.POST("/register", func(c *gin.Context) {
 		var request struct {
 			Name     string `json:"name" binding:"required"`
 			Email    string `json:"email" binding:"required,email"`
@@ -62,7 +62,7 @@ func RegisterAuthRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// POST /auth - Login endpoint
-	router.POST("login", func(c *gin.Context) {
+	router.POST("/login", func(c *gin.Context) {
 		var request struct {
 			Email    string `json:"email" binding:"required,email"`
 			Password string `json:"password" binding:"required"`
@@ -109,7 +109,7 @@ func RegisterAuthRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Logged in user details
-	router.GET("me", func(c *gin.Context) {
+	router.GET("/me", func(c *gin.Context) {
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

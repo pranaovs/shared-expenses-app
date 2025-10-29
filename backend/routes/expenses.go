@@ -43,7 +43,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Get expense by ID
-	router.GET(":id", func(c *gin.Context) {
+	router.GET("/:id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -67,7 +67,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Update expense
-	router.PUT(":id", func(c *gin.Context) {
+	router.PUT("/:id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -117,7 +117,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Delete expense
-	router.DELETE(":id", func(c *gin.Context) {
+	router.DELETE("/:id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
