@@ -107,6 +107,58 @@ func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 stri
 
 	return areRelated, nil
 }
+
+// AdminOfGroups return a list of models.Group where the user is the creator
+func AdminOfGroups(ctx context.Context, pool *pgxpool.Pool, userID string) ([]models.Group, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT group_id, group_name, description, created_by, extract(epoch from created_at)::bigint
+		FROM groups
+		WHERE created_by = $1
+		ORDER BY created_at DESC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []models.Group
+	for rows.Next() {
+		var g models.Group
+		err := rows.Scan(&g.GroupID, &g.Name, &g.Description, &g.CreatedBy, &g.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, g)
+	}
+	return groups, nil
+}
+
+// MemberOfGroups returns the groups where the user is a member of (includes created groups)
+func MemberOfGroups(ctx context.Context, pool *pgxpool.Pool, userID string) ([]models.Group, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT g.group_id, g.group_name, g.description, g.created_by, extract(epoch from g.created_at)::bigint
+		FROM groups g
+		JOIN group_members gm ON gm.group_id = g.group_id
+		WHERE gm.user_id = $1
+		ORDER BY g.created_at DESC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []models.Group
+	for rows.Next() {
+		var g models.Group
+		err := rows.Scan(&g.GroupID, &g.Name, &g.Description, &g.CreatedBy, &g.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, g)
+	}
+	return groups, nil
+}
+
 // UserExists checks if a user with the given userID exists in the database.
 func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) (bool, error) {
 	var exists bool
