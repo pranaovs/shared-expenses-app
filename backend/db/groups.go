@@ -59,7 +59,7 @@ func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.G
 
 	err := pool.QueryRow(
 		ctx,
-		`SELECT name, description, created_by, extract(epoch from created_at)::bigint
+		`SELECT group_name, description, created_by, extract(epoch from created_at)::bigint
 		FROM groups
 		WHERE group_id = $1`,
 		groupID,
