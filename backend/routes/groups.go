@@ -111,7 +111,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// Get group by ID
-	router.GET(":id", func(c *gin.Context) {
+	router.GET("/:id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
