@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"shared-expenses-app/models"
+
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -72,4 +74,21 @@ func GetUserCredentials(ctx context.Context, pool *pgxpool.Pool, email string) (
 	}
 
 	return userID, passwordHash, nil
+}
+
+func GetUser(ctx context.Context, pool *pgxpool.Pool, userID string) (models.User, error) {
+	var user models.User
+	err := pool.QueryRow(
+		context.Background(),
+		`select user_id, user_name, email, is_guest, extract(epoch from created_at)::bigint from users where user_id = $1`,
+		userID,
+	).Scan(&user.UserID, &user.Name, &user.Email, &user.Guest, &user.CreatedAt)
+	if err == pgx.ErrNoRows {
+		return models.User{}, errors.New("user not found")
+	}
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }

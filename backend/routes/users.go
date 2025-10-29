@@ -128,4 +128,29 @@ func RegisterUserRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			"token":   token,
 		})
 	})
+
+	router.GET("me", func(c *gin.Context) {
+		header := c.GetHeader("Authorization")
+		claims, err := utils.ExtractClaims(header)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		userID, ok := claims["user_id"].(string)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token claims"})
+			return
+		}
+
+		var user models.User
+
+		user, err = db.GetUser(context.Background(), pool, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, user)
+	})
 }
