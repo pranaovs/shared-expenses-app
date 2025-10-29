@@ -183,4 +183,24 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 
 		c.JSON(http.StatusOK, result)
 	})
+
+	// User details
+	router.GET("find", func(c *gin.Context) {
+		// Authenticate requester
+		_, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		email := c.Query("email")
+
+		user, err := db.GetUserFromEmail(c.Request.Context(), pool, email)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, user)
+	})
 }
