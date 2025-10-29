@@ -3,13 +3,12 @@ package routes
 import (
 	"context"
 	"net/http"
-	"time"
 
+	"shared-expenses-app/db"
 	"shared-expenses-app/models"
 	"shared-expenses-app/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -73,35 +72,10 @@ func RegisterUserRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 
 		// At this point, all inputs are valid
 
-		// Check if user already exists
-		var existingID string
-		err = pool.QueryRow(
-			context.Background(),
-			`SELECT user_id FROM users WHERE email = $1`,
-			email,
-		).Scan(&existingID)
-
-		if err == nil {
-			c.JSON(http.StatusConflict, gin.H{"error": "user already exists"})
-			return
-		}
-		if err != pgx.ErrNoRows {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "database query failed"})
-			return
-		}
-
-		// Insert new user
-		var userID string
-		err = pool.QueryRow(
-			context.Background(),
-			`INSERT INTO users (user_name, email, password_hash, created_at)
-			 VALUES ($1, $2, $3, $4)
-			 RETURNING user_id`,
-			name, email, passwordHash, time.Now(),
-		).Scan(&userID)
+		// Create new user
+		userID, err := db.CreateUser(context.Background(), pool, name, email, passwordHash)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
@@ -128,32 +102,21 @@ func RegisterUserRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		password, err := utils.HashPassword(request.Password)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+		password := request.Password
 
-		var uid, savedPassword string
-
-		err = pool.QueryRow(
-			context.Background(),
-			`SELECT user_id, password_hash FROM users WHERE email = $1`,
-			email,
-		).Scan(&uid, &password)
+		userID, savedPassword, err := db.GetUserCredentials(context.Background(), pool, email)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
-			return
 		}
 
-		if ok := utils.CheckPassword(savedPassword, request.Password); !ok {
+		if ok := utils.CheckPassword(password, savedPassword); !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
 			return
 		}
 
 		// At this point, login is successful
 
-		token, err := utils.GenerateJWT(uid)
+		token, err := utils.GenerateJWT(userID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create token"})
 			return
