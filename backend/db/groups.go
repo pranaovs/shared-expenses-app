@@ -11,21 +11,46 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// CreateGroup inserts a new group into the database and adds the owner as a member.
 func CreateGroup(ctx context.Context, pool *pgxpool.Pool, name, description, ownerUserID string) (models.Group, error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return models.Group{}, err
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
 	var group models.Group
 
-	err := pool.QueryRow(
+	err = tx.QueryRow(
 		ctx,
 		`INSERT INTO groups (group_name, description, created_by, created_at)
-			 VALUES ($1, $2, $3, $4)
-			 RETURNING group_id, group_name, description, created_by, extract(epoch from created_at)::bigint`,
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING group_id, group_name, description, created_by, extract(epoch from created_at)::bigint`,
 		name, description, ownerUserID, time.Now(),
 	).Scan(&group.GroupID, &group.Name, &group.Description, &group.CreatedBy, &group.CreatedAt)
 	if err != nil {
 		return models.Group{}, err
 	}
 
-	// Return the new user's ID
+	_, err = tx.Exec(
+		ctx,
+		`INSERT INTO group_members (user_id, group_id, joined_at)
+		 VALUES ($1, $2, $3)`,
+		ownerUserID, group.GroupID, time.Now(),
+	)
+	if err != nil {
+		return models.Group{}, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return models.Group{}, err
+	}
+
 	return group, nil
 }
 
