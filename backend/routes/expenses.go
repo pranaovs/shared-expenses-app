@@ -160,7 +160,7 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		if err := db.DeleteExpense(c, pool, expenseID, userID); err != nil {
+		if err := db.DeleteExpense(c, pool, expenseID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
