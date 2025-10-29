@@ -200,7 +200,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		})
 	})
 
-	// Add members to a group
+	// Remove members from a group
 	router.POST("remove_members", func(c *gin.Context) {
 		type request struct {
 			GroupID string   `json:"group_id" binding:"required"`
