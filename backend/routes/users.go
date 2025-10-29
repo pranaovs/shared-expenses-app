@@ -153,8 +153,8 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	})
 
 	// User details
-	router.GET("get/:id", func(c *gin.Context) {
-		qUserID := c.Param("id")
+	router.GET("get", func(c *gin.Context) {
+		qUserID := c.Query("id")
 
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
