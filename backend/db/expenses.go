@@ -84,10 +84,10 @@ func UpdateExpense(ctx context.Context, pool *pgxpool.Pool, expense models.Expen
 			longitude = COALESCE($9, longitude)
 			WHERE expense_id = $1`,
 		expense.ExpenseID,
-		expense.GroupID,
 		expense.Title,
 		expense.Description,
 		expense.Amount,
+		expense.AddedBy,
 		expense.IsIncompleteAmount,
 		expense.IsIncompleteSplit,
 		expense.Latitude,
