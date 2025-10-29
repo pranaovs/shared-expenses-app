@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// CreateUser inserts a new user into the database and returns the new user's ID.
+// CreateUser inserts a new user into the database and returns the newly created user's struct.
 func CreateUser(ctx context.Context, pool *pgxpool.Pool, name, email, password string) (models.User, error) {
 	// Check if user already exists
 	_, err := GetUserFromEmail(ctx, pool, email)
