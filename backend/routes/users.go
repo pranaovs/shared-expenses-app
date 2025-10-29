@@ -168,9 +168,8 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		email := c.Query("email")
-
-		if !utils.ValidateEmail(email) {
+		email, err := utils.ValidateEmail(c.Query("email"))
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email format"})
 			return
 		}
