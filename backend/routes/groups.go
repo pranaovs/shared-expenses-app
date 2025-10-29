@@ -90,6 +90,22 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, groups)
 	})
 
+	router.GET("admin_of", func(c *gin.Context) {
+		// Authenticate user
+		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		groups, err := db.AdminOfGroups(c.Request.Context(), pool, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, groups)
+	})
+
 	router.GET("get/:group_id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
