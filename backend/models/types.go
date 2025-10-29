@@ -11,17 +11,27 @@ type User struct {
 }
 
 type Group struct {
-	GroupID     string `json:"group_id" db:"group_id"`
-	Name        string `json:"name" db:"group_name"`
-	Description string `json:"description,omitempty" db:"description"`
-	CreatedBy   string `json:"created_by" db:"created_by"`
-	CreatedAt   int64  `json:"created_at" db:"created_at"`
+	GroupID     string      `json:"group_id" db:"group_id"`
+	Name        string      `json:"name" db:"group_name"`
+	Description string      `json:"description,omitempty" db:"description"`
+	CreatedBy   string      `json:"created_by" db:"created_by"`
+	CreatedAt   int64       `json:"created_at" db:"created_at"`
+	Members     []GroupUser `json:"members" db:"-"` // NOTE: Be careful with this
 }
 
 type GroupMember struct {
 	UserID   string `json:"user_id" db:"user_id"`
 	GroupID  string `json:"group_id" db:"group_id"`
 	JoinedAt int64  `json:"joined_at" db:"joined_at"`
+}
+
+// Not a part of DB schema, used for responses
+type GroupUser struct {
+	UserID   string `json:"user_id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Guest    bool   `json:"guest"`
+	JoinedAt int64  `json:"joined_at"`
 }
 
 type Expense struct {
