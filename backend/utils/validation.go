@@ -16,7 +16,7 @@ func ValidateName(name string) (string, error) {
 		return "", errors.New("name is empty")
 	}
 	if !nameRegex.MatchString(name) {
-		return "", errors.New("invalid name")
+		return "", errors.New("invalid name: must be 2-64 characters, start and end with a letter, and contain only letters, spaces, periods, apostrophes, and hyphens")
 	}
 	return name, nil
 }
