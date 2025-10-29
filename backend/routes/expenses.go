@@ -30,12 +30,7 @@ func RegisterExpenseRoutes(router *gin.Engine, pool *pgxpool.Pool) {
 		}
 		expense.AddedBy = userID
 
-		isMember, err := db.MemberOfGroup(c, pool, userID, expense.GroupID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify membership"})
-			return
-		}
-		if !isMember {
+		if err := db.MemberOfGroup(c, pool, userID, expense.GroupID); err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "user not a member of group"})
 			return
 		}
@@ -65,12 +60,7 @@ func RegisterExpenseRoutes(router *gin.Engine, pool *pgxpool.Pool) {
 			return
 		}
 
-		isMember, err := db.MemberOfGroup(c, pool, userID, expense.GroupID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "membership check failed"})
-			return
-		}
-		if !isMember {
+		if err := db.MemberOfGroup(c, pool, userID, expense.GroupID); err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
 		}
