@@ -22,8 +22,15 @@ func CreateExpense(
 		return "", errors.New("invalid amount")
 	}
 
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+
+	// Insert expense details
 	var expenseID string
-	err := pool.QueryRow(
+	err = pool.QueryRow(
 		ctx,
 		`INSERT INTO expenses (
 			group_id, added_by, title, description, amount,
@@ -46,27 +53,52 @@ func CreateExpense(
 		return "", err
 	}
 
+	for _, split := range expense.Splits {
+		_, err = tx.Exec(ctx, `
+			INSERT INTO expense_splits (expense_id, user_id, amount, is_paid)
+			VALUES ($1, $2, $3, $4)
+		`, expenseID, split.UserID, split.Amount, split.IsPaid)
+		if err != nil {
+			return "", err
+		}
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return "", err
+	}
+
 	return expenseID, nil
 }
 
 func UpdateExpense(ctx context.Context, pool *pgxpool.Pool, expense models.Expense) error {
+	if expense.ExpenseID == "" {
+		return errors.New("expense_id required")
+	}
 	if expense.Title == "" {
 		return errors.New("title required")
 	}
 	if expense.Amount <= 0 {
 		return errors.New("invalid amount")
 	}
-	_, err := pool.Exec(
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Update main expense fields
+	_, err = tx.Exec(
 		ctx,
 		`UPDATE expenses
 			SET title = $2,
-			description = $3,
-			amount = $4,
-			added_by = $5,
-			is_incomplete_amount = $6,
-			is_incomplete_split = $7
-			latitude = $8
-			longitude = $9
+				description = $3,
+				amount = $4,
+				added_by = $5,
+				is_incomplete_amount = $6,
+				is_incomplete_split = $7,
+				latitude = $8,
+				longitude = $9
 			WHERE expense_id = $1`,
 		expense.ExpenseID,
 		expense.Title,
@@ -78,18 +110,33 @@ func UpdateExpense(ctx context.Context, pool *pgxpool.Pool, expense models.Expen
 		expense.Latitude,
 		expense.Longitude,
 	)
-	if err == pgx.ErrNoRows {
-		return errors.New("expense not found")
-	}
 	if err != nil {
 		return err
 	}
 
-	return nil
+	// Remove old splits first
+	_, err = tx.Exec(ctx, `DELETE FROM expense_splits WHERE expense_id = $1`, expense.ExpenseID)
+	if err != nil {
+		return err
+	}
+
+	// Reinsert updated splits
+	for _, split := range expense.Splits {
+		_, err = tx.Exec(ctx, `
+			INSERT INTO expense_splits (expense_id, user_id, amount, is_paid)
+			VALUES ($1, $2, $3, $4)
+		`, expense.ExpenseID, split.UserID, split.Amount, split.IsPaid)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
 }
 
 func GetExpense(ctx context.Context, pool *pgxpool.Pool, expenseID string) (models.Expense, error) {
 	var expense models.Expense
+
 	err := pool.QueryRow(
 		ctx,
 		`SELECT expense_id,
@@ -103,8 +150,8 @@ func GetExpense(ctx context.Context, pool *pgxpool.Pool, expenseID string) (mode
 			is_incomplete_split,
 			latitude,
 			longitude
-			FROM expenses
-			WHERE expense_id = $1`,
+		 FROM expenses
+		 WHERE expense_id = $1`,
 		expenseID,
 	).Scan(
 		&expense.ExpenseID,
@@ -126,18 +173,47 @@ func GetExpense(ctx context.Context, pool *pgxpool.Pool, expenseID string) (mode
 		return models.Expense{}, err
 	}
 
+	// Fetch splits
+	rows, err := pool.Query(ctx, `SELECT user_id, amount, is_paid FROM expense_splits WHERE expense_id = $1`, expenseID)
+	if err != nil {
+		return models.Expense{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var split models.ExpenseSplit
+		err = rows.Scan(&split.UserID, &split.Amount, &split.IsPaid)
+		if err != nil {
+			return models.Expense{}, err
+		}
+		expense.Splits = append(expense.Splits, split)
+	}
+
 	return expense, nil
 }
 
 func DeleteExpense(ctx context.Context, pool *pgxpool.Pool, expenseID string) error {
-	cmd, err := pool.Exec(ctx, `DELETE FROM expenses WHERE expense_id = $1`, expenseID)
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Delete splits
+	_, err = tx.Exec(ctx, `DELETE FROM expense_splits WHERE expense_id = $1`, expenseID)
+	if err != nil {
+		return err
+	}
+
+	// Delete Expense
+	cmd, err := tx.Exec(ctx, `DELETE FROM expenses WHERE expense_id = $1`, expenseID)
 	if err != nil {
 		return err
 	}
 
 	if cmd.RowsAffected() == 0 {
-		return errors.New("no rows deleted")
+		return errors.New("expense not found")
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
