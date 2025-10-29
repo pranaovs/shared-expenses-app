@@ -77,6 +77,7 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		userID, err := db.CreateUser(context.Background(), pool, name, email, passwordHash)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
@@ -109,6 +110,7 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		userID, savedPassword, err := db.GetUserCredentials(context.Background(), pool, email)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
+			return
 		}
 
 		if ok := utils.CheckPassword(password, savedPassword); !ok {
@@ -157,15 +159,18 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
 		}
 
 		ok, err := db.UsersRelated(context.Background(), pool, userID, qUserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
 		if !ok {
 			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			return
 		}
 
 		// At this point, users are related
@@ -173,6 +178,7 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		result, err := db.GetUser(context.Background(), pool, qUserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
 		c.JSON(http.StatusOK, result)
