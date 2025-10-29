@@ -74,14 +74,14 @@ func UpdateExpense(ctx context.Context, pool *pgxpool.Pool, expense models.Expen
 	_, err := pool.Exec(
 		ctx,
 		`UPDATE expenses
-			SET title = COALESCE($2, title),
-			description = COALESCE($3, description),
-			amount = COALESCE($4, amount),
-			added_by = COALESCE($5, added_by),
-			is_incomplete_amount = COALESCE($6, is_incomplete_amount),
-			is_incomplete_split = COALESCE($7, is_incomplete_split),
-			latitude = COALESCE($8, latitude),
-			longitude = COALESCE($9, longitude)
+			SET title = $2,
+			description = $3,
+			amount = $4,
+			added_by = $5,
+			is_incomplete_amount = $6,
+			is_incomplete_split = $7
+			latitude = $8
+			longitude = $9
 			WHERE expense_id = $1`,
 		expense.ExpenseID,
 		expense.Title,
