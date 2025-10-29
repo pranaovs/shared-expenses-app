@@ -107,3 +107,19 @@ func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 stri
 
 	return areRelated, nil
 }
+// UserExists checks if a user with the given userID exists in the database.
+func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) (bool, error) {
+	var exists bool
+	err := pool.QueryRow(ctx,
+		`SELECT true FROM users WHERE user_id = $1`,
+		userID,
+	).Scan(&exists)
+	if err == pgx.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

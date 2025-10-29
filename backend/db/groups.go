@@ -74,13 +74,25 @@ func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.G
 	return group, members, nil
 }
 
+// AddGroupMembers adds multiple users to a group.
 func AddGroupMembers(ctx context.Context, pool *pgxpool.Pool, groupID string, userIDs []string) error {
 	if len(userIDs) == 0 {
 		return errors.New("no user IDs provided")
 	}
 
-	batch := &pgx.Batch{}
+	validUserIDs := make([]string, 0, len(userIDs))
 	for _, userID := range userIDs {
+		exists, err := UserExists(ctx, pool, userID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			validUserIDs = append(validUserIDs, userID)
+		}
+	}
+
+	batch := &pgx.Batch{}
+	for _, userID := range validUserIDs {
 		batch.Queue(
 			`INSERT INTO group_members (user_id, group_id)
 			 VALUES ($1, $2)
