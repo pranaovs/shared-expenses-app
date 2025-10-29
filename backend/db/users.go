@@ -7,14 +7,14 @@ import (
 
 	"shared-expenses-app/models"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // CreateUser inserts a new user into the database and returns the new user's ID.
 func CreateUser(ctx context.Context, pool *pgxpool.Pool, name, email, password string) (string, error) {
 	// Check if user already exists
-	ok, _, err := GetUserIDFromEmail(context.Background(), pool, email)
+	ok, _, err := GetUserIDFromEmail(ctx, pool, email)
 	if err != nil {
 		return "", err
 	}
@@ -26,7 +26,7 @@ func CreateUser(ctx context.Context, pool *pgxpool.Pool, name, email, password s
 	// Add user to database
 	var userID string
 	err = pool.QueryRow(
-		context.Background(),
+		ctx,
 		`INSERT INTO users (user_name, email, password_hash, created_at)
 			 VALUES ($1, $2, $3, $4)
 			 RETURNING user_id`,
@@ -60,7 +60,7 @@ func GetUserIDFromEmail(ctx context.Context, pool *pgxpool.Pool, email string) (
 func GetUserCredentials(ctx context.Context, pool *pgxpool.Pool, email string) (string, string, error) {
 	var userID, passwordHash string
 	err := pool.QueryRow(
-		context.Background(),
+		ctx,
 		`select user_id, password_hash from users where email = $1`,
 		email,
 	).Scan(&userID, &passwordHash)
@@ -78,7 +78,7 @@ func GetUserCredentials(ctx context.Context, pool *pgxpool.Pool, email string) (
 func GetUser(ctx context.Context, pool *pgxpool.Pool, userID string) (models.User, error) {
 	var user models.User
 	err := pool.QueryRow(
-		context.Background(),
+		ctx,
 		`select user_id, user_name, email, is_guest, extract(epoch from created_at)::bigint from users where user_id = $1`,
 		userID,
 	).Scan(&user.UserID, &user.Name, &user.Email, &user.Guest, &user.CreatedAt)
