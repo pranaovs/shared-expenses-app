@@ -94,7 +94,9 @@ func GetUser(ctx context.Context, pool *pgxpool.Pool, userID string) (models.Use
 	return user, nil
 }
 
-func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 string) (bool, error) {
+// UsersRelated checks if two users are related (share at least one group).
+// Returns nil if users are related, or an error otherwise.
+func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 string) error {
 	var areRelated bool
 	err := pool.QueryRow(ctx, `
     SELECT EXISTS (
@@ -106,10 +108,14 @@ func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 stri
         AND gm2.user_id = $2
     )`, userID1, userID2).Scan(&areRelated)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return areRelated, nil
+	if !areRelated {
+		return errors.New("users not related")
+	}
+
+	return nil
 }
 
 // AdminOfGroups return a list of models.Group where the user is the creator
@@ -164,34 +170,37 @@ func MemberOfGroups(ctx context.Context, pool *pgxpool.Pool, userID string) ([]m
 }
 
 // UserExists checks if a user with the given userID exists in the database.
-func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) (bool, error) {
+// Returns nil if user exists, or an error otherwise.
+func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) error {
 	var exists bool
 	err := pool.QueryRow(ctx,
 		`SELECT true FROM users WHERE user_id = $1`,
 		userID,
 	).Scan(&exists)
 	if err == pgx.ErrNoRows {
-		return false, nil
+		return errors.New("user not found")
 	}
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
-func MemberOfGroup(ctx context.Context, pool *pgxpool.Pool, userID, groupID string) (bool, error) {
+// MemberOfGroup checks if a user is a member of a group.
+// Returns nil if user is a member, or an error otherwise.
+func MemberOfGroup(ctx context.Context, pool *pgxpool.Pool, userID, groupID string) error {
 	var isMember bool
 	err := pool.QueryRow(ctx,
 		`SELECT true FROM group_members WHERE user_id = $1 AND group_id = $2`,
 		userID, groupID,
 	).Scan(&isMember)
 	if err == pgx.ErrNoRows {
-		return false, nil
+		return errors.New("not a member")
 	}
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }

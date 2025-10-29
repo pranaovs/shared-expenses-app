@@ -117,13 +117,13 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		qGroupID := c.Param("group_id")
 
 		// Check membership in that group
-		isMember, err := db.MemberOfGroup(c, pool, userID, qGroupID)
+		err = db.MemberOfGroup(c, pool, userID, qGroupID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify membership"})
-			return
-		}
-		if !isMember {
-			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			if err.Error() == "not a member" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify membership"})
+			}
 			return
 		}
 
@@ -172,13 +172,17 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		// Filter valid users (existing in DB)
 		validUserIDs := make([]string, 0, len(req.UserIDs))
 		for _, uid := range req.UserIDs {
-			exists, err := db.UserExists(c, pool, uid)
-			if err != nil {
+			err := db.UserExists(c, pool, uid)
+			if err == nil {
+				// User exists
+				validUserIDs = append(validUserIDs, uid)
+			} else if err.Error() == "user not found" {
+				// User doesn't exist, skip
+				continue
+			} else {
+				// Database error
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
-			}
-			if exists {
-				validUserIDs = append(validUserIDs, uid)
 			}
 		}
 
