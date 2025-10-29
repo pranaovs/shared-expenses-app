@@ -198,6 +198,11 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "only group admin can remove members"})
 			return
 		}
+		if slices.Contains(req.UserIDs, group.CreatedBy) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "cannot remove group admin"})
+			return
+		}
+
 		// Remove members
 		err = db.RemoveGroupMembers(c, pool, req.GroupID, req.UserIDs)
 		if err != nil {
