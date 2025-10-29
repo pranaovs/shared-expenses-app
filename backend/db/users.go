@@ -175,3 +175,19 @@ func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) (bool, e
 
 	return true, nil
 }
+
+func MemberOfGroup(ctx context.Context, pool *pgxpool.Pool, userID, groupID string) (bool, error) {
+	var isMember bool
+	err := pool.QueryRow(ctx,
+		`SELECT true FROM group_members WHERE user_id = $1 AND group_id = $2`,
+		userID, groupID,
+	).Scan(&isMember)
+	if err == pgx.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
