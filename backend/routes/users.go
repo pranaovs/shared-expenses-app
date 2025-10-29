@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"shared-expenses-app/db"
@@ -137,14 +138,13 @@ func RegisterUsersRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		ok, err := db.UsersRelated(context.Background(), pool, userID, qUserID)
+		err = db.UsersRelated(context.Background(), pool, userID, qUserID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		if !ok {
-			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			if errors.Is(err, db.ErrUsersNotRelated) {
+				c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
 			return
 		}
 

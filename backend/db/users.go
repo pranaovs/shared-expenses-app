@@ -11,6 +11,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Sentinel errors for user-related operations
+var (
+	ErrUserNotFound    = errors.New("user not found")
+	ErrNotMember       = errors.New("not a member")
+	ErrUsersNotRelated = errors.New("users not related")
+)
+
 // CreateUser inserts a new user into the database and returns the newly created user's struct.
 func CreateUser(ctx context.Context, pool *pgxpool.Pool, name, email, password string) (models.User, error) {
 	// Check if user already exists
@@ -94,7 +101,9 @@ func GetUser(ctx context.Context, pool *pgxpool.Pool, userID string) (models.Use
 	return user, nil
 }
 
-func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 string) (bool, error) {
+// UsersRelated checks if two users are related (share at least one group).
+// Returns nil if users are related, or ErrUsersNotRelated if not.
+func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 string) error {
 	var areRelated bool
 	err := pool.QueryRow(ctx, `
     SELECT EXISTS (
@@ -106,10 +115,14 @@ func UsersRelated(ctx context.Context, pool *pgxpool.Pool, userID1, userID2 stri
         AND gm2.user_id = $2
     )`, userID1, userID2).Scan(&areRelated)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return areRelated, nil
+	if !areRelated {
+		return ErrUsersNotRelated
+	}
+
+	return nil
 }
 
 // AdminOfGroups return a list of models.Group where the user is the creator
@@ -164,34 +177,37 @@ func MemberOfGroups(ctx context.Context, pool *pgxpool.Pool, userID string) ([]m
 }
 
 // UserExists checks if a user with the given userID exists in the database.
-func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) (bool, error) {
+// Returns nil if user exists, or ErrUserNotFound if not.
+func UserExists(ctx context.Context, pool *pgxpool.Pool, userID string) error {
 	var exists bool
 	err := pool.QueryRow(ctx,
 		`SELECT true FROM users WHERE user_id = $1`,
 		userID,
 	).Scan(&exists)
 	if err == pgx.ErrNoRows {
-		return false, nil
+		return ErrUserNotFound
 	}
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
-func MemberOfGroup(ctx context.Context, pool *pgxpool.Pool, userID, groupID string) (bool, error) {
+// MemberOfGroup checks if a user is a member of a group.
+// Returns nil if user is a member, or ErrNotMember if not.
+func MemberOfGroup(ctx context.Context, pool *pgxpool.Pool, userID, groupID string) error {
 	var isMember bool
 	err := pool.QueryRow(ctx,
 		`SELECT true FROM group_members WHERE user_id = $1 AND group_id = $2`,
 		userID, groupID,
 	).Scan(&isMember)
 	if err == pgx.ErrNoRows {
-		return false, nil
+		return ErrNotMember
 	}
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
