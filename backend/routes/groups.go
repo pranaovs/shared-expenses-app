@@ -39,7 +39,8 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	// 	c.JSON(http.StatusOK, groups)
 	// })
 
-	router.POST("create", func(c *gin.Context) {
+	// Create Group
+	router.POST("", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -75,7 +76,8 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, group)
 	})
 
-	router.GET("list", func(c *gin.Context) {
+	// List groups the user is a member of
+	router.GET("me", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -91,7 +93,8 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, groups)
 	})
 
-	router.GET("admin_of", func(c *gin.Context) {
+	// List groups the user is admin of
+	router.GET("admin", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -107,7 +110,8 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, groups)
 	})
 
-	router.GET("get/:group_id", func(c *gin.Context) {
+	// Get group by ID
+	router.GET(":id", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
@@ -115,7 +119,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			return
 		}
 
-		qGroupID := c.Param("group_id")
+		qGroupID := c.Param("id")
 
 		// Check membership in that group
 		err = db.MemberOfGroup(c, pool, userID, qGroupID)
