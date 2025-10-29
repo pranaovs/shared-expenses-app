@@ -13,7 +13,7 @@ import (
 
 func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	// Create expense
-	router.POST("", func(c *gin.Context) {
+	router.POST("/", func(c *gin.Context) {
 		// Authenticate user
 		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
 		if err != nil {
