@@ -29,7 +29,8 @@ func CreateGroup(ctx context.Context, pool *pgxpool.Pool, name, description, own
 	return group, nil
 }
 
-func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.Group, error) {
+// GetGroup retrieves group details along with its members
+func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.Group, []models.GroupUser, error) {
 	var group models.Group
 
 	err := pool.QueryRow(
@@ -40,10 +41,10 @@ func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.G
 		groupID,
 	).Scan(&group.Name, &group.Description, &group.CreatedBy, &group.CreatedAt)
 	if err == pgx.ErrNoRows {
-		return models.Group{}, errors.New("group not found")
+		return models.Group{}, make([]models.GroupUser, 0), errors.New("group not found")
 	}
 	if err != nil {
-		return models.Group{}, err
+		return models.Group{}, make([]models.GroupUser, 0), err
 	}
 
 	// Fetch group members
@@ -56,20 +57,21 @@ func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.G
 		groupID,
 	)
 	if err != nil {
-		return models.Group{}, err
+		return models.Group{}, make([]models.GroupUser, 0), err
 	}
 	defer rows.Close()
 
+	var members []models.GroupUser
 	for rows.Next() {
 		var member models.GroupUser
 		err := rows.Scan(&member.UserID, &member.Name, &member.Email, &member.Guest, &member.JoinedAt)
 		if err != nil {
-			return models.Group{}, err
+			return models.Group{}, make([]models.GroupUser, 0), err
 		}
-		group.Members = append(group.Members, member)
+		members = append(members, member)
 	}
 
-	return group, nil
+	return group, members, nil
 }
 
 func AddGroupMembers(ctx context.Context, pool *pgxpool.Pool, groupID string, userIDs []string) error {
