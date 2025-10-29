@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
 	"slices"
 
@@ -119,7 +120,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		// Check membership in that group
 		err = db.MemberOfGroup(c, pool, userID, qGroupID)
 		if err != nil {
-			if err.Error() == "not a member" {
+			if errors.Is(err, db.ErrNotMember) {
 				c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			} else {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify membership"})
@@ -176,7 +177,7 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			if err == nil {
 				// User exists
 				validUserIDs = append(validUserIDs, uid)
-			} else if err.Error() == "user not found" {
+			} else if errors.Is(err, db.ErrUserNotFound) {
 				// User doesn't exist, skip
 				continue
 			} else {
