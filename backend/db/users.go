@@ -59,7 +59,7 @@ func GetUserCredentials(ctx context.Context, pool *pgxpool.Pool, email string) (
 	var userID, passwordHash string
 	err := pool.QueryRow(
 		ctx,
-		`select user_id, password_hash from users where email = $1`,
+		`SELECT user_id, password_hash FROM users WHERE email = $1`,
 		email,
 	).Scan(&userID, &passwordHash)
 	if err == pgx.ErrNoRows {
@@ -77,7 +77,7 @@ func GetUser(ctx context.Context, pool *pgxpool.Pool, userID string) (models.Use
 	var user models.User
 	err := pool.QueryRow(
 		ctx,
-		`select user_id, user_name, email, is_guest, extract(epoch from created_at)::bigint from users where user_id = $1`,
+		`SELECT user_id, user_name, email, is_guest, extract(epoch from created_at)::bigint FROM users WHERE user_id = $1`,
 		userID,
 	).Scan(&user.UserID, &user.Name, &user.Email, &user.Guest, &user.CreatedAt)
 	if err == pgx.ErrNoRows {
