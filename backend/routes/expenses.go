@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"math"
 	"net/http"
+	"strconv"
+
 	"shared-expenses-app/db"
 	"shared-expenses-app/models"
 	"shared-expenses-app/utils"
@@ -49,7 +52,11 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			total += s.Amount
 		}
 
-		if total != expense.Amount {
+		tolerance, err := strconv.ParseFloat(utils.Getenv("SPLIT_TOLERANCE", "0.01"), 64)
+		if err != nil {
+			tolerance = 0.01
+		}
+		if math.Abs(total-expense.Amount) > tolerance {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "split total does not match expense amount"})
 			return
 		}
@@ -145,7 +152,11 @@ func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 			total += s.Amount
 		}
 
-		if total != payload.Amount {
+		tolerance, err := strconv.ParseFloat(utils.Getenv("SPLIT_TOLERANCE", "0.01"), 64)
+		if err != nil {
+			tolerance = 0.01
+		}
+		if math.Abs(total-payload.Amount) > tolerance {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "split total does not match expense amount"})
 			return
 		}
