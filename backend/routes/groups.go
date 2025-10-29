@@ -5,7 +5,6 @@ import (
 	"slices"
 
 	"shared-expenses-app/db"
-	"shared-expenses-app/models"
 	"shared-expenses-app/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,29 +13,30 @@ import (
 
 func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 	// BUG: Remove it from production
-	router.GET("list", func(c *gin.Context) {
-		rows, err := pool.Query(c.Request.Context(),
-			`SELECT group_id, group_name, description, created_by, extract(epoch from created_at)::bigint
-			 FROM groups ORDER BY created_at DESC`)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		defer rows.Close()
-
-		var groups []models.Group
-		for rows.Next() {
-			var g models.Group
-			err := rows.Scan(&g.GroupID, &g.Name, &g.Description, &g.CreatedBy, &g.CreatedAt)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			groups = append(groups, g)
-		}
-
-		c.JSON(http.StatusOK, groups)
-	})
+	//
+	// router.GET("list", func(c *gin.Context) {
+	// 	rows, err := pool.Query(c.Request.Context(),
+	// 		`SELECT group_id, group_name, description, created_by, extract(epoch from created_at)::bigint
+	// 		 FROM groups ORDER BY created_at DESC`)
+	// 	if err != nil {
+	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 		return
+	// 	}
+	// 	defer rows.Close()
+	//
+	// 	var groups []models.Group
+	// 	for rows.Next() {
+	// 		var g models.Group
+	// 		err := rows.Scan(&g.GroupID, &g.Name, &g.Description, &g.CreatedBy, &g.CreatedAt)
+	// 		if err != nil {
+	// 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 			return
+	// 		}
+	// 		groups = append(groups, g)
+	// 	}
+	//
+	// 	c.JSON(http.StatusOK, groups)
+	// })
 
 	router.POST("create", func(c *gin.Context) {
 		// Authenticate user
@@ -72,6 +72,22 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		}
 
 		c.JSON(http.StatusOK, group)
+	})
+
+	router.GET("list", func(c *gin.Context) {
+		// Authenticate user
+		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		groups, err := db.MemberOfGroups(c.Request.Context(), pool, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, groups)
 	})
 
 	router.GET("get/:group_id", func(c *gin.Context) {
