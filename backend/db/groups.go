@@ -59,11 +59,11 @@ func GetGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) (models.G
 
 	err := pool.QueryRow(
 		ctx,
-		`SELECT group_name, description, created_by, extract(epoch from created_at)::bigint
+		`SELECT group_id, group_name, description, created_by, extract(epoch from created_at)::bigint
 		FROM groups
 		WHERE group_id = $1`,
 		groupID,
-	).Scan(&group.Name, &group.Description, &group.CreatedBy, &group.CreatedAt)
+	).Scan(&group.GroupID, &group.Name, &group.Description, &group.CreatedBy, &group.CreatedAt)
 	if err == pgx.ErrNoRows {
 		return models.Group{}, errors.New("group not found")
 	}
