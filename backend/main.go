@@ -26,6 +26,7 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.RedirectTrailingSlash = true
 	routes.RegisterRoutes(router, pool)
 
 	port := utils.Getenv("API_PORT", "8080")

@@ -64,6 +64,18 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     return currentUserId == addedBy || currentUserId == createdBy;
   }
 
+  String _getUserName(String userId) {
+    final group = context.read<GroupsProvider>().selectedGroup;
+    if (group == null) return 'User ${userId.substring(0, 8)}';
+    
+    final member = group.members.firstWhere(
+      (m) => m.userId == userId,
+      orElse: () => null as dynamic,
+    );
+    
+    return member?.name ?? 'User ${userId.substring(0, 8)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,11 +194,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       )
                     : Column(
                         children: expense.paidSplits.map((split) {
+                          final userName = _getUserName(split.userId);
                           return ListTile(
                             leading: CircleAvatar(
-                              child: Text(split.userId.substring(0, 2).toUpperCase()),
+                              child: Text(userName.substring(0, 1).toUpperCase()),
                             ),
-                            title: Text('User ${split.userId.substring(0, 8)}'),
+                            title: Text(userName),
                             trailing: Text(
                               Formatters.formatCurrency(split.amount),
                               style: const TextStyle(
@@ -214,11 +227,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       )
                     : Column(
                         children: expense.owedSplits.map((split) {
+                          final userName = _getUserName(split.userId);
                           return ListTile(
                             leading: CircleAvatar(
-                              child: Text(split.userId.substring(0, 2).toUpperCase()),
+                              child: Text(userName.substring(0, 1).toUpperCase()),
                             ),
-                            title: Text('User ${split.userId.substring(0, 8)}'),
+                            title: Text(userName),
                             trailing: Text(
                               Formatters.formatCurrency(split.amount),
                               style: const TextStyle(

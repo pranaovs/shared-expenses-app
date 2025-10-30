@@ -11,6 +11,7 @@ class AuthProvider with ChangeNotifier {
   bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _error;
+  bool _initialized = false;
 
   User? get currentUser => _currentUser;
   bool get isAuthenticated => _isAuthenticated;
@@ -18,11 +19,18 @@ class AuthProvider with ChangeNotifier {
   String? get error => _error;
   ApiService get apiService => _apiService;
 
+  Future<void> initialize() async {
+    if (_initialized) return;
+    await _apiService.ensureInitialized();
+    _initialized = true;
+  }
+
   Future<void> checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      await initialize();
       final token = await _storageService.getToken();
       if (token != null) {
         _currentUser = await _apiService.getCurrentUser();
@@ -43,6 +51,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await initialize();
       await _apiService.register(name, email, password);
       // Auto-login after registration
       return await login(email, password);
@@ -60,6 +69,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await initialize();
       final token = await _apiService.login(email, password);
       await _storageService.saveToken(token);
       _currentUser = await _apiService.getCurrentUser();

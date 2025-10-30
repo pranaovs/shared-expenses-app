@@ -24,6 +24,7 @@ class ExpensesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       _selectedExpense = await _apiService.getExpense(expenseId);
       _isLoading = false;
       notifyListeners();
@@ -40,6 +41,7 @@ class ExpensesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       final expenseId = await _apiService.createExpense(expense);
       // Load the created expense and add to cache
       final createdExpense = await _apiService.getExpense(expenseId);
@@ -61,6 +63,7 @@ class ExpensesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       await _apiService.updateExpense(expenseId, expense);
       await loadExpense(expenseId);
       return true;
@@ -78,6 +81,7 @@ class ExpensesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       await _apiService.deleteExpense(expenseId);
       _removeExpenseFromCache(expenseId, groupId);
       _isLoading = false;

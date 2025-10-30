@@ -49,7 +49,7 @@ func randB64() string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-var jwtSecret = []byte(Getenv("JWT_SECRET", randB64()))
+var jwtSecret = []byte(Getenv("JWT_SECRET", "meowmeow"))
 
 func GenerateJWT(userID string) (string, error) {
 	expiryStr := Getenv("JWT_EXPIRY", "24")

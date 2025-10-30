@@ -8,7 +8,9 @@ import 'storage_service.dart';
 class ApiService {
   late Dio _dio;
   final StorageService _storage = StorageService();
+  String? _cachedBaseUrl;
   bool _initialized = false;
+  Future<void>? _initFuture;
 
   ApiService() {
     _dio = Dio(BaseOptions(
@@ -22,9 +24,6 @@ class ApiService {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        if (!_initialized) {
-          await _initializeBaseUrl();
-        }
         final token = await _storage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -37,10 +36,28 @@ class ApiService {
     ));
   }
 
+  Future<void> ensureInitialized() async {
+    if (_initialized) return;
+    
+    // Prevent multiple simultaneous initializations
+    if (_initFuture != null) {
+      return _initFuture;
+    }
+    
+    _initFuture = _initializeBaseUrl();
+    await _initFuture;
+    _initFuture = null;
+  }
+
   Future<void> _initializeBaseUrl() async {
+    if (_initialized) return;
+    
     final serverUrl = await _storage.getServerUrl();
-    if (serverUrl != null) {
+    if (serverUrl != null && serverUrl != _dio.options.baseUrl) {
       _dio.options.baseUrl = serverUrl;
+      _cachedBaseUrl = serverUrl;
+    } else {
+      _cachedBaseUrl = ApiConfig.baseUrl;
     }
     _initialized = true;
   }
@@ -48,11 +65,13 @@ class ApiService {
   Future<void> updateBaseUrl(String url) async {
     await _storage.saveServerUrl(url);
     _dio.options.baseUrl = url;
+    _cachedBaseUrl = url;
     _initialized = true;
   }
 
   Future<String> getCurrentBaseUrl() async {
-    return await _storage.getServerUrl() ?? ApiConfig.baseUrl;
+    await ensureInitialized();
+    return _cachedBaseUrl ?? ApiConfig.baseUrl;
   }
 
   // Authentication

@@ -22,6 +22,7 @@ class GroupsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       _groups = await _apiService.getMyGroups();
       _isLoading = false;
       notifyListeners();
@@ -38,6 +39,7 @@ class GroupsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       _selectedGroup = await _apiService.getGroup(groupId);
       _isLoading = false;
       notifyListeners();
@@ -54,6 +56,7 @@ class GroupsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _apiService.ensureInitialized();
       await _apiService.createGroup(name, description);
       await loadGroups();
       return true;
