@@ -129,4 +129,12 @@ class ExpensesProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  void clearAll() {
+    _expensesByGroup.clear();
+    _selectedExpense = null;
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
 }

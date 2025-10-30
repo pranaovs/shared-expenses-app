@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../providers/groups_provider.dart';
+import '../providers/expenses_provider.dart';
 import '../utils/formatters.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -107,6 +109,8 @@ class ProfileScreen extends StatelessWidget {
                   if (confirm == true && context.mounted) {
                     await context.read<AuthProvider>().logout();
                     if (context.mounted) {
+                      context.read<GroupsProvider>().clearAll();
+                      context.read<ExpensesProvider>().clearAll();
                       context.go('/login');
                     }
                   }

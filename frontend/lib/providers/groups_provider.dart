@@ -110,4 +110,12 @@ class GroupsProvider with ChangeNotifier {
   bool isUserAdmin(String userId) {
     return _selectedGroup?.createdBy == userId;
   }
+
+  void clearAll() {
+    _groups = [];
+    _selectedGroup = null;
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
 }

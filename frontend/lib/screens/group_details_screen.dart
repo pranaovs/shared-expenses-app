@@ -219,14 +219,35 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               // Expenses Section
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Recent Expenses',
-                  style: Theme.of(context).textTheme.titleLarge,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recent Expenses',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        context.read<ExpensesProvider>().loadExpensesForGroup(widget.groupId);
+                      },
+                      tooltip: 'Refresh expenses',
+                    ),
+                  ],
                 ),
               ),
               Consumer<ExpensesProvider>(
                 builder: (context, expensesProvider, child) {
                   final expenses = expensesProvider.getExpensesForGroup(widget.groupId);
+                  
+                  // Show loading only if we're loading AND have no cached expenses
+                  if (expensesProvider.isLoading && expenses.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  
                   if (expenses.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
