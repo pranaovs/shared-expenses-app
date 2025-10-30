@@ -17,6 +17,7 @@ class ExpensesProvider with ChangeNotifier {
   Expense? get selectedExpense => _selectedExpense;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  ApiService get apiService => _apiService;
 
   Future<void> loadExpense(String expenseId) async {
     _isLoading = true;
@@ -26,6 +27,24 @@ class ExpensesProvider with ChangeNotifier {
     try {
       await _apiService.ensureInitialized();
       _selectedExpense = await _apiService.getExpense(expenseId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = _apiService.getErrorMessage(e);
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadExpensesForGroup(String groupId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.ensureInitialized();
+      final expenses = await _apiService.getExpensesByGroup(groupId);
+      _expensesByGroup[groupId] = expenses;
       _isLoading = false;
       notifyListeners();
     } catch (e) {

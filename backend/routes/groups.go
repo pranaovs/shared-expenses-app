@@ -290,4 +290,36 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 
 		c.JSON(http.StatusOK, settlements)
 	})
+
+	// Get user's expense breakdown for a group
+	router.GET("/:id/my-expenses", func(c *gin.Context) {
+		groupID := c.Param("id")
+
+		// Authenticate the requester
+		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Check if user is a member of the group
+		err = db.MemberOfGroup(c, pool, userID, groupID)
+		if err != nil {
+			if errors.Is(err, db.ErrNotMember) {
+				c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify membership"})
+			}
+			return
+		}
+
+		// Get user's expense breakdown
+		breakdowns, err := db.GetUserExpensesInGroup(c.Request.Context(), pool, groupID, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get expense breakdown"})
+			return
+		}
+
+		c.JSON(http.StatusOK, breakdowns)
+	})
 }

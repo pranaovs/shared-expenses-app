@@ -14,6 +14,32 @@ import (
 )
 
 func RegisterExpensesRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
+	// Get expenses by group
+	router.GET("/group/:groupId", func(c *gin.Context) {
+		groupID := c.Param("groupId")
+
+		// Authenticate user
+		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Check if user is a member of the group
+		if err := db.MemberOfGroup(c, pool, userID, groupID); err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+			return
+		}
+
+		expenses, err := db.GetExpensesByGroup(c.Request.Context(), pool, groupID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve expenses"})
+			return
+		}
+
+		c.JSON(http.StatusOK, expenses)
+	})
+
 	// Create expense with splits
 	router.POST("", func(c *gin.Context) {
 		// Authenticate user

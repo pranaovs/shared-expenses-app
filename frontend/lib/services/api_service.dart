@@ -4,6 +4,7 @@ import '../models/user.dart';
 import '../models/group.dart';
 import '../models/expense.dart';
 import '../models/settlement.dart';
+import '../models/user_expense_breakdown.dart';
 import 'storage_service.dart';
 
 class ApiService {
@@ -213,6 +214,20 @@ class ApiService {
     }
   }
 
+  Future<List<UserExpenseBreakdown>> getMyExpensesInGroup(String groupId) async {
+    try {
+      final response = await _dio.get(ApiConfig.groupMyExpenses(groupId));
+      if (response.data == null) {
+        return [];
+      }
+      return (response.data as List)
+          .map((e) => UserExpenseBreakdown.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Expenses
   Future<String> createExpense(ExpenseRequest expense) async {
     try {
@@ -243,6 +258,20 @@ class ApiService {
   Future<void> deleteExpense(String expenseId) async {
     try {
       await _dio.delete(ApiConfig.expenseById(expenseId));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Expense>> getExpensesByGroup(String groupId) async {
+    try {
+      final response = await _dio.get(ApiConfig.expensesByGroup(groupId));
+      if (response.data == null) {
+        return [];
+      }
+      return (response.data as List)
+          .map((e) => Expense.fromJson(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       rethrow;
     }

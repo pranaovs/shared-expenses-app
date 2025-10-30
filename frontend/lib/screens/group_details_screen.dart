@@ -23,6 +23,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     super.initState();
     Future.microtask(() {
       context.read<GroupsProvider>().loadGroup(widget.groupId);
+      context.read<ExpensesProvider>().loadExpensesForGroup(widget.groupId);
     });
   }
 
@@ -160,16 +161,30 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.push('/groups/${widget.groupId}/settlements'),
-                          icon: const Icon(Icons.account_balance_wallet),
-                          label: const Text('Settle Expenses'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => context.push('/groups/${widget.groupId}/my-expenses'),
+                              icon: const Icon(Icons.receipt_long),
+                              label: const Text('My Expenses'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () => context.push('/groups/${widget.groupId}/settlements'),
+                              icon: const Icon(Icons.account_balance_wallet),
+                              label: const Text('Settle'),
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

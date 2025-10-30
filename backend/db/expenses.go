@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"shared-expenses-app/models"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -236,4 +237,90 @@ func DeleteExpense(ctx context.Context, pool *pgxpool.Pool, expenseID string) er
 	}
 
 	return tx.Commit(ctx)
+}
+
+// GetExpensesByGroup retrieves all expenses for a given group
+func GetExpensesByGroup(ctx context.Context, pool *pgxpool.Pool, groupID string) ([]models.Expense, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT expense_id, group_id, added_by, title, description, amount, 
+		       is_incomplete_amount, is_incomplete_split, 
+		       latitude, longitude, extract(epoch from created_at)::bigint
+		FROM expenses
+		WHERE group_id = $1
+		ORDER BY created_at DESC
+	`, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	expenses := make([]models.Expense, 0)
+	for rows.Next() {
+		var expense models.Expense
+		var description, latitude, longitude *string
+
+		err := rows.Scan(
+			&expense.ExpenseID,
+			&expense.GroupID,
+			&expense.AddedBy,
+			&expense.Title,
+			&description,
+			&expense.Amount,
+			&expense.IsIncompleteAmount,
+			&expense.IsIncompleteSplit,
+			&latitude,
+			&longitude,
+			&expense.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if description != nil {
+			expense.Description = *description
+		}
+		if latitude != nil {
+			lat, _ := strconv.ParseFloat(*latitude, 64)
+			expense.Latitude = lat
+		}
+		if longitude != nil {
+			lon, _ := strconv.ParseFloat(*longitude, 64)
+			expense.Longitude = lon
+		}
+
+		// Get splits for this expense
+		splits, err := getExpenseSplits(ctx, pool, expense.ExpenseID)
+		if err != nil {
+			return nil, err
+		}
+		expense.Splits = splits
+
+		expenses = append(expenses, expense)
+	}
+
+	return expenses, nil
+}
+
+func getExpenseSplits(ctx context.Context, pool *pgxpool.Pool, expenseID string) ([]models.ExpenseSplit, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT user_id, amount, is_paid
+		FROM expense_splits
+		WHERE expense_id = $1
+	`, expenseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	splits := make([]models.ExpenseSplit, 0)
+	for rows.Next() {
+		var split models.ExpenseSplit
+		err := rows.Scan(&split.UserID, &split.Amount, &split.IsPaid)
+		if err != nil {
+			return nil, err
+		}
+		splits = append(splits, split)
+	}
+
+	return splits, nil
 }

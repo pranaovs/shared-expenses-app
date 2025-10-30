@@ -14,6 +14,8 @@ import 'screens/profile_screen.dart';
 import 'screens/create_expense_screen.dart';
 import 'screens/expense_details_screen.dart';
 import 'screens/settlements_screen.dart';
+import 'screens/edit_expense_screen.dart';
+import 'screens/my_expenses_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -159,6 +161,20 @@ class MyApp extends StatelessWidget {
           builder: (context, state) {
             final id = state.pathParameters['id']!;
             return SettlementsScreen(groupId: id);
+          },
+        ),
+        GoRoute(
+          path: '/expenses/:id/edit',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return EditExpenseScreen(expenseId: id);
+          },
+        ),
+        GoRoute(
+          path: '/groups/:id/my-expenses',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return MyExpensesScreen(groupId: id);
           },
         ),
       ],

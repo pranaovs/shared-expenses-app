@@ -108,12 +108,18 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               return PopupMenuButton(
                 itemBuilder: (context) => [
                   const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit'),
+                  ),
+                  const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete', style: TextStyle(color: Colors.red)),
                   ),
                 ],
                 onSelected: (value) {
-                  if (value == 'delete') {
+                  if (value == 'edit') {
+                    context.push('/expenses/${expense.expenseId}/edit');
+                  } else if (value == 'delete') {
                     _deleteExpense();
                   }
                 },

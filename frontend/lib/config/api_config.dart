@@ -20,10 +20,12 @@ class ApiConfig {
   static String groupById(String id) => '/groups/$id';
   static String groupMembers(String id) => '/groups/$id/members';
   static String groupSettlements(String id) => '/groups/$id/settlements';
+  static String groupMyExpenses(String id) => '/groups/$id/my-expenses';
   
   // Expense endpoints
   static const String expenses = '/expenses';
   static String expenseById(String id) => '/expenses/$id';
+  static String expensesByGroup(String groupId) => '/expenses/group/$groupId';
   
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);
