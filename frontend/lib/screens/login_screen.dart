@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../utils/validators.dart';
+import '../widgets/server_config_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +17,20 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String _serverUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServerUrl();
+  }
+
+  Future<void> _loadServerUrl() async {
+    final url = await context.read<AuthProvider>().apiService.getCurrentBaseUrl();
+    setState(() {
+      _serverUrl = url;
+    });
+  }
 
   @override
   void dispose() {
@@ -42,6 +57,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _showServerConfig() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => ServerConfigDialog(
+        apiService: context.read<AuthProvider>().apiService,
+      ),
+    );
+    
+    if (result == true) {
+      _loadServerUrl();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,6 +83,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.settings),
+                        onPressed: _showServerConfig,
+                        tooltip: 'Configure Server',
+                      ),
+                    ],
+                  ),
                   Icon(
                     Icons.account_balance_wallet,
                     size: 64,
@@ -138,6 +176,41 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text('Register'),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.dns,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Server: ${_serverUrl.isEmpty ? "Not configured" : _serverUrl}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _showServerConfig,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(0, 30),
+                          ),
+                          child: const Text('Change'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

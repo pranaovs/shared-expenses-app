@@ -6,8 +6,9 @@ import '../models/expense.dart';
 import 'storage_service.dart';
 
 class ApiService {
-  late final Dio _dio;
+  late Dio _dio;
   final StorageService _storage = StorageService();
+  bool _initialized = false;
 
   ApiService() {
     _dio = Dio(BaseOptions(
@@ -21,6 +22,9 @@ class ApiService {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        if (!_initialized) {
+          await _initializeBaseUrl();
+        }
         final token = await _storage.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -31,6 +35,24 @@ class ApiService {
         return handler.next(error);
       },
     ));
+  }
+
+  Future<void> _initializeBaseUrl() async {
+    final serverUrl = await _storage.getServerUrl();
+    if (serverUrl != null) {
+      _dio.options.baseUrl = serverUrl;
+    }
+    _initialized = true;
+  }
+
+  Future<void> updateBaseUrl(String url) async {
+    await _storage.saveServerUrl(url);
+    _dio.options.baseUrl = url;
+    _initialized = true;
+  }
+
+  Future<String> getCurrentBaseUrl() async {
+    return await _storage.getServerUrl() ?? ApiConfig.baseUrl;
   }
 
   // Authentication

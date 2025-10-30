@@ -16,6 +16,7 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  ApiService get apiService => _apiService;
 
   Future<void> checkAuthStatus() async {
     _isLoading = true;

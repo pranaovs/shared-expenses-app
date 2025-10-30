@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../utils/validators.dart';
+import '../widgets/server_config_dialog.dart';
+import '../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +21,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  String _serverUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServerUrl();
+  }
+
+  Future<void> _loadServerUrl() async {
+    final url = await context.read<AuthProvider>().apiService.getCurrentBaseUrl();
+    setState(() {
+      _serverUrl = url;
+    });
+  }
 
   @override
   void dispose() {
@@ -48,6 +64,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _showServerConfig() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => ServerConfigDialog(
+        apiService: context.read<AuthProvider>().apiService,
+      ),
+    );
+    
+    if (result == true) {
+      _loadServerUrl();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,6 +85,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/login'),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _showServerConfig,
+            tooltip: 'Configure Server',
+          ),
+        ],
       ),
       body: SafeArea(
         child: Center(
@@ -170,6 +206,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             : const Text('Register'),
                       );
                     },
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.dns,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Server: ${_serverUrl.isEmpty ? "Not configured" : _serverUrl}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _showServerConfig,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(0, 30),
+                          ),
+                          child: const Text('Change'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
