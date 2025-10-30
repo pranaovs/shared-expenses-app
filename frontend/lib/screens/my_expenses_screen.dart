@@ -45,9 +45,9 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     }
   }
 
-  double get totalNetSpending {
+  double get totalSpent {
     if (_expenses == null) return 0;
-    return _expenses!.fold(0, (sum, expense) => sum + expense.netSpending);
+    return _expenses!.fold(0, (sum, expense) => sum + expense.amountOwed);
   }
 
   @override
@@ -116,17 +116,14 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: totalNetSpending >= 0
-                                  ? [Colors.green.shade400, Colors.green.shade600]
-                                  : [Colors.orange.shade400, Colors.orange.shade600],
+                              colors: [Colors.blue.shade400, Colors.blue.shade600],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: (totalNetSpending >= 0 ? Colors.green : Colors.orange)
-                                    .withOpacity(0.3),
+                                color: Colors.blue.withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -136,7 +133,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Your Net Spending',
+                                'Total Personal Spending',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -145,7 +142,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                Formatters.formatCurrency(totalNetSpending.abs()),
+                                Formatters.formatCurrency(totalSpent),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 32,
@@ -154,42 +151,13 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                totalNetSpending >= 0
-                                    ? 'You spent for yourself'
-                                    : 'You owe others',
+                                'What you spent for yourself',
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.9),
                                   fontSize: 14,
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                        // Info Card
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Card(
-                            color: Colors.blue.shade50,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.info_outline, 
-                                    size: 20, 
-                                    color: Colors.blue.shade700),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Shows your net spending per expense (paid - owed)',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.blue.shade700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -200,20 +168,19 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                             itemCount: _expenses!.length,
                             itemBuilder: (context, index) {
                               final expense = _expenses![index];
-                              final isOwing = expense.netSpending < 0;
                               
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                child: ExpansionTile(
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                   leading: CircleAvatar(
-                                    backgroundColor: isOwing
-                                        ? Colors.orange.shade100
-                                        : Colors.green.shade100,
+                                    backgroundColor: Colors.blue.shade100,
                                     child: Icon(
-                                      isOwing ? Icons.arrow_upward : Icons.account_balance_wallet,
-                                      color: isOwing
-                                          ? Colors.orange.shade900
-                                          : Colors.green.shade900,
+                                      Icons.receipt,
+                                      color: Colors.blue.shade900,
                                       size: 20,
                                     ),
                                   ),
@@ -221,6 +188,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                     expense.title,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 16,
                                     ),
                                   ),
                                   subtitle: Column(
@@ -234,6 +202,19 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                           color: Colors.grey.shade600,
                                         ),
                                       ),
+                                      if (expense.description != null &&
+                                          expense.description!.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          expense.description!,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ],
                                   ),
                                   trailing: Column(
@@ -241,17 +222,15 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        Formatters.formatCurrency(expense.netSpending.abs()),
+                                        Formatters.formatCurrency(expense.amountOwed),
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: isOwing
-                                              ? Colors.orange.shade700
-                                              : Colors.green.shade700,
+                                          color: Theme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                       Text(
-                                        isOwing ? 'Owed' : 'Spent',
+                                        'Spent',
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: Colors.grey.shade600,
@@ -259,115 +238,6 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                       ),
                                     ],
                                   ),
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          if (expense.description != null &&
-                                              expense.description!.isNotEmpty) ...[
-                                            Text(
-                                              expense.description!,
-                                              style: TextStyle(
-                                                color: Colors.grey.shade700,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            const Divider(),
-                                            const SizedBox(height: 12),
-                                          ],
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'Total Expense:',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                              Text(
-                                                Formatters.formatCurrency(expense.totalAmount),
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'You Paid:',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                              Text(
-                                                Formatters.formatCurrency(expense.amountPaid),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.green.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'You Owe:',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                              Text(
-                                                Formatters.formatCurrency(expense.amountOwed),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.orange.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 12),
-                                          const Divider(),
-                                          const SizedBox(height: 12),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'Net Spending:',
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Text(
-                                                Formatters.formatCurrency(expense.netSpending.abs()),
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: isOwing
-                                                      ? Colors.orange.shade700
-                                                      : Colors.green.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               );
                             },

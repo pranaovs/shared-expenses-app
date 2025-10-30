@@ -18,10 +18,9 @@ type UserExpenseBreakdown struct {
 	NetSpending float64 `json:"net_spending"` // AmountPaid - AmountOwed (positive means user spent for themselves)
 }
 
-// GetUserExpensesInGroup retrieves all expenses in a group showing the user's net spending
-// Net spending = Amount user paid - Amount user owes
-// Positive net spending means the user spent money for themselves
-// Only returns expenses where the user has a non-zero net spending
+// GetUserExpensesInGroup retrieves all expenses in a group showing the user's personal spending
+// This shows how much the user spent for themselves (amount they owe)
+// Only returns expenses where the user has a non-zero amount owed (spent for themselves)
 func GetUserExpensesInGroup(ctx context.Context, pool *pgxpool.Pool, groupID, userID string) ([]UserExpenseBreakdown, error) {
 	rows, err := pool.Query(ctx, `
 		WITH user_splits AS (
@@ -48,7 +47,7 @@ func GetUserExpensesInGroup(ctx context.Context, pool *pgxpool.Pool, groupID, us
 			amount_owed,
 			(amount_paid - amount_owed) as net_spending
 		FROM user_splits
-		WHERE (amount_paid - amount_owed) != 0
+		WHERE amount_owed > 0
 		ORDER BY created_at DESC
 	`, groupID, userID)
 	if err != nil {
