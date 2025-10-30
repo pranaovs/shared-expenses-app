@@ -89,7 +89,7 @@ class _SettlementsScreenState extends State<SettlementsScreen> {
                   style: const TextStyle(fontSize: 14),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
         actions: [
@@ -167,12 +167,12 @@ class _SettlementsScreenState extends State<SettlementsScreen> {
     final group = context.read<GroupsProvider>().selectedGroup;
     if (group == null) return 'User ${userId.substring(0, 8)}';
     
-    final member = group.members.firstWhere(
-      (m) => m.userId == userId,
-      orElse: () => null as dynamic,
-    );
-    
-    return member?.name ?? 'User ${userId.substring(0, 8)}';
+    try {
+      final member = group.members.firstWhere((m) => m.userId == userId);
+      return member.name;
+    } catch (e) {
+      return 'User ${userId.substring(0, 8)}';
+    }
   }
 
   @override
@@ -316,7 +316,7 @@ class _SettlementsScreenState extends State<SettlementsScreen> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                         const SizedBox(height: 16),
                         if (_settlements!.isNotEmpty)
                           SizedBox(

@@ -38,13 +38,17 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   }
 
   Future<void> _loadExpense() async {
-    final expense = await context.read<ExpensesProvider>().apiService.ensureInitialized();
+    await context.read<ExpensesProvider>().apiService.ensureInitialized();
     await context.read<ExpensesProvider>().loadExpense(widget.expenseId);
+    
+    if (!mounted) return;
     
     final loadedExpense = context.read<ExpensesProvider>().selectedExpense;
     if (loadedExpense != null) {
       _groupId = loadedExpense.groupId;
       await context.read<GroupsProvider>().loadGroup(loadedExpense.groupId);
+      
+      if (!mounted) return;
       
       _titleController.text = loadedExpense.title;
       _descriptionController.text = loadedExpense.description ?? '';
@@ -74,19 +78,6 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  void _initializeControllers() {
-    Future.microtask(() {
-      final group = context.read<GroupsProvider>().selectedGroup;
-      if (group != null) {
-        for (var member in group.members) {
-          _paidControllers[member.userId] = TextEditingController(text: '0');
-          _owedControllers[member.userId] = TextEditingController(text: '0');
-          _selectedMembers[member.userId] = false;
-        }
-      }
-    });
   }
 
   @override

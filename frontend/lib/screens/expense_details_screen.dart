@@ -20,7 +20,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<ExpensesProvider>().loadExpense(widget.expenseId);
+      if (mounted) {
+        context.read<ExpensesProvider>().loadExpense(widget.expenseId);
+      }
     });
   }
 
@@ -68,12 +70,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     final group = context.read<GroupsProvider>().selectedGroup;
     if (group == null) return 'User ${userId.substring(0, 8)}';
     
-    final member = group.members.firstWhere(
-      (m) => m.userId == userId,
-      orElse: () => null as dynamic,
-    );
-    
-    return member?.name ?? 'User ${userId.substring(0, 8)}';
+    try {
+      final member = group.members.firstWhere((m) => m.userId == userId);
+      return member.name;
+    } catch (e) {
+      return 'User ${userId.substring(0, 8)}';
+    }
   }
 
   @override

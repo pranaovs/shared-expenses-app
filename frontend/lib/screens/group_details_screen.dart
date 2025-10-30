@@ -22,8 +22,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<GroupsProvider>().loadGroup(widget.groupId);
-      context.read<ExpensesProvider>().loadExpensesForGroup(widget.groupId);
+      if (mounted) {
+        context.read<GroupsProvider>().loadGroup(widget.groupId);
+        context.read<ExpensesProvider>().loadExpensesForGroup(widget.groupId);
+      }
     });
   }
 
