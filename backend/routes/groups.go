@@ -143,6 +143,55 @@ func RegisterGroupsRoutes(router *gin.RouterGroup, pool *pgxpool.Pool) {
 		c.JSON(http.StatusOK, group)
 	})
 
+	// Update group info
+	router.PUT("/:id", func(c *gin.Context) {
+		groupID := c.Param("id")
+
+		var request struct {
+			Name        string `json:"name" binding:"required"`
+			Description string `json:"description"`
+		}
+
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Authenticate the requester
+		userID, err := utils.ExtractUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Ensure requester is the admin (creator) of the group
+		groupCreator, err := db.GetGroupCreator(c, pool, groupID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "group not found"})
+			return
+		}
+		if groupCreator != userID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only group admin can update group info"})
+			return
+		}
+
+		// Validate name
+		name, err := utils.ValidateName(request.Name)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Update group
+		err = db.UpdateGroup(c.Request.Context(), pool, groupID, name, request.Description)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update group"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "group updated successfully"})
+	})
+
 	// Add members to a group
 	router.POST("/:id/members", func(c *gin.Context) {
 		groupID := c.Param("id")

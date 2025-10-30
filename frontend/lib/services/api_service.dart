@@ -180,6 +180,17 @@ class ApiService {
     }
   }
 
+  Future<void> updateGroup(String groupId, String name, String? description) async {
+    try {
+      await _dio.put(ApiConfig.groupById(groupId), data: {
+        'name': name,
+        'description': description,
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> addGroupMembers(String groupId, List<String> userIds) async {
     try {
       await _dio.post(ApiConfig.groupMembers(groupId), data: {

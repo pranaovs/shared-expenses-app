@@ -112,24 +112,38 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Group Details'),
-      ),
-      body: Consumer2<GroupsProvider, AuthProvider>(
-        builder: (context, groupsProvider, authProvider, child) {
-          if (groupsProvider.isLoading && groupsProvider.selectedGroup == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer2<GroupsProvider, AuthProvider>(
+      builder: (context, groupsProvider, authProvider, child) {
+        if (groupsProvider.isLoading && groupsProvider.selectedGroup == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Group Details')),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          final group = groupsProvider.selectedGroup;
-          if (group == null) {
-            return const Center(child: Text('Group not found'));
-          }
+        final group = groupsProvider.selectedGroup;
+        if (group == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Group Details')),
+            body: const Center(child: Text('Group not found')),
+          );
+        }
 
-          final isAdmin = groupsProvider.isUserAdmin(authProvider.currentUser?.userId ?? '');
+        final isAdmin = groupsProvider.isUserAdmin(authProvider.currentUser?.userId ?? '');
 
-          return ListView(
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Group Details'),
+            actions: [
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => context.push('/groups/${widget.groupId}/edit'),
+                  tooltip: 'Edit group',
+                ),
+            ],
+          ),
+          body: ListView(
             children: [
               // Group Info Card
               Card(
@@ -267,14 +281,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 },
               ),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/expenses/create', extra: widget.groupId),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
-      ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => context.push('/expenses/create', extra: widget.groupId),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Expense'),
+          ),
+        );
+      },
     );
   }
 }

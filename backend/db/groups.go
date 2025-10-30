@@ -199,3 +199,23 @@ func RemoveGroupMembers(ctx context.Context, pool *pgxpool.Pool, groupID string,
 
 	return nil
 }
+
+// UpdateGroup updates the name and description of a group.
+func UpdateGroup(ctx context.Context, pool *pgxpool.Pool, groupID, name, description string) error {
+	result, err := pool.Exec(
+		ctx,
+		`UPDATE groups 
+		 SET group_name = $1, description = $2
+		 WHERE group_id = $3`,
+		name, description, groupID,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return errors.New("group not found")
+	}
+
+	return nil
+}

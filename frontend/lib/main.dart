@@ -10,6 +10,7 @@ import 'screens/register_screen.dart';
 import 'screens/groups_list_screen.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_details_screen.dart';
+import 'screens/edit_group_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/create_expense_screen.dart';
 import 'screens/expense_details_screen.dart';
@@ -136,6 +137,13 @@ class MyApp extends StatelessWidget {
           builder: (context, state) {
             final id = state.pathParameters['id']!;
             return GroupDetailsScreen(groupId: id);
+          },
+        ),
+        GoRoute(
+          path: '/groups/:id/edit',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return EditGroupScreen(groupId: id);
           },
         ),
         GoRoute(

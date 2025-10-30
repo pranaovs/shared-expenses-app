@@ -68,6 +68,20 @@ class GroupsProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateGroup(String groupId, String name, String? description) async {
+    try {
+      await _apiService.ensureInitialized();
+      await _apiService.updateGroup(groupId, name, description);
+      await loadGroup(groupId);
+      await loadGroups();
+      return true;
+    } catch (e) {
+      _error = _apiService.getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> addMembers(String groupId, List<String> userIds) async {
     try {
       await _apiService.addGroupMembers(groupId, userIds);
