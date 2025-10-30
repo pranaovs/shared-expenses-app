@@ -67,13 +67,13 @@ class Expense {
   DateTime get createdAtDateTime => DateTime.fromMillisecondsSinceEpoch(createdAt * 1000);
 
   List<ExpenseSplit> get paidSplits => splits.where((s) => s.isPaid).toList();
-  List<ExpenseSplit> get owedSplits => splits.where((s) => !s.isPaid).toList();
+  List<ExpenseSplit> get spentSplits => splits.where((s) => !s.isPaid).toList();
 }
 
 class ExpenseSplit {
   final String userId;
   final double amount;
-  final bool isPaid; // true = paid (lender), false = owes (borrower)
+  final bool isPaid; // true = paid (contributed), false = spent (consumed)
 
   ExpenseSplit({
     required this.userId,

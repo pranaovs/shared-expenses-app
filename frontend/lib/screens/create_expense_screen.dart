@@ -258,7 +258,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                                       child: TextField(
                                         controller: _owedControllers[member.userId],
                                         decoration: const InputDecoration(
-                                          labelText: 'Owes',
+                                          labelText: 'Spent',
                                           prefixText: '\$ ',
                                           border: OutlineInputBorder(),
                                         ),

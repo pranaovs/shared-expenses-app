@@ -219,20 +219,20 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Who Owes Section
+              // Who Spent Section
               Text(
-                'Who Owes',
+                'Who Spent',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               Card(
-                child: expense.owedSplits.isEmpty
+                child: expense.spentSplits.isEmpty
                     ? const Padding(
                         padding: EdgeInsets.all(16),
-                        child: Text('No borrowers'),
+                        child: Text('No spending recorded'),
                       )
                     : Column(
-                        children: expense.owedSplits.map((split) {
+                        children: expense.spentSplits.map((split) {
                           final userName = _getUserName(split.userId);
                           return ListTile(
                             leading: CircleAvatar(
